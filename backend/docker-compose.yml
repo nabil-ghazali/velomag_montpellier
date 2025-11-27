@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: opendata
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+
+volumes:
+  timescaledb_data:
