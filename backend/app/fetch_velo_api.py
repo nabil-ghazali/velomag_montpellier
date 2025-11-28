@@ -1,51 +1,59 @@
 import requests
 import pandas as pd
-from tqdm import tqdm  # optionnel, juste pour le suivi
+from datetime import datetime, timedelta
 
-BASE_URL = "https://portail-api-data.montpellier3m.fr"
+def fetch_counter_timeseries(counter_id: str, from_date: str, to_date: str) -> pd.DataFrame:
+    """Récupère la série temporelle d'un compteur"""
+    url_series = f"https://portail-api-data.montpellier3m.fr/ecocounter_timeseries/{counter_id}/attrs/intensity"
+    params = {"fromDate": from_date, "toDate": to_date}
+    response = requests.get(url_series, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        df = pd.DataFrame({
+            "datetime": data["index"],
+            "intensity": data["values"],
+            "counter_id": counter_id
+        })
+        df["datetime"] = pd.to_datetime(df["datetime"])
+        return df
+    else:
+        print(f"Erreur récupération séries pour {counter_id} : {response.status_code}")
+        return pd.DataFrame()
 
-def fetch_counters():
-    url = f"{BASE_URL}/ecocounter"
-    resp = requests.get(url, headers={"Accept":"application/json"})
-    resp.raise_for_status()
-    return resp.json()
+def fetch_counter_description(counter_id: str) -> dict:
+    """Récupère les informations statiques d’un compteur"""
+    url_desc = f"https://portail-api-data.montpellier3m.fr/ecocounter/{counter_id}"
+    response = requests.get(url_desc)
+    if response.status_code == 200:
+        data = response.json()
+        lat, lon = data["location"]["value"]["coordinates"]
+        laneId = data.get("laneId", {}).get("value")
+        vehicleType = data.get("vehicleType", {}).get("value")
+        return {
+            "counter_id": counter_id,
+            "lat": lat,
+            "lon": lon,
+            "laneId": laneId,
+            "vehicleType": vehicleType
+        }
+    else:
+        print(f"Erreur récupération description pour {counter_id}")
+        return {
+            "counter_id": counter_id,
+            "lat": None,
+            "lon": None,
+            "laneId": None,
+            "vehicleType": None
+        }
 
-def fetch_timeseries(counter_id):
-    url = f"{BASE_URL}/ecocounter_timeseries/{counter_id}/attrs/intensity"
-    resp = requests.get(url, headers={"Accept":"application/json"})
-    resp.raise_for_status()
-    return resp.json()
-
-# 1. récupérer tous les compteurs
-counters = fetch_counters()
-df_counters = pd.json_normalize(counters)
-
-# Extraire les ids
-ids = df_counters["id"].apply(lambda x: x.split(":")[-1]).unique().tolist()
-
-# 2. pour chaque compteur, récupérer les mesures
-all_data = []
-for cid in tqdm(ids):
-    try:
-        ts = fetch_timeseries(cid)
-        for item in ts:
-            all_data.append({
-                "counter_id": cid,
-                "timestamp": item.get("intensity", {}).get("metadata", {}).get("TimeInstant", {}).get("value"),
-                "intensity": item.get("intensity", {}).get("value")
-            })
-    except Exception as e:
-        print("Erreur pour", cid, e)
-
-df_all = pd.DataFrame(all_data)
-
-# 3. Nettoyage
-df_all["timestamp"] = pd.to_datetime(df_all["timestamp"], errors="coerce")
-df_all["intensity"] = pd.to_numeric(df_all["intensity"], errors="coerce")
-df_all = df_all.dropna(subset=["counter_id", "timestamp"])
-
-# 4. Sauvegarde
-df_counters.to_csv("data/raw/counters_meta.csv", index=False)
-df_all.to_csv("data/raw/traffic_history.csv", index=False)
-
-print("Ingestion terminée – fichiers raw créés")
+def fetch_all_counters(counters: list, from_date: str, to_date: str) -> pd.DataFrame:
+    """Récupère toutes les séries temporelles pour une liste de compteurs"""
+    all_data = []
+    for c in counters:
+        df = fetch_counter_timeseries(c, from_date, to_date)
+        if not df.empty:
+            all_data.append(df)
+    if all_data:
+        return pd.concat(all_data, ignore_index=True)
+    return pd.DataFrame()

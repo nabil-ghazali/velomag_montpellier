@@ -1,6 +1,7 @@
 data/
 docs/
 notebooks/EDA.ipynb/
+notebooks/df
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
