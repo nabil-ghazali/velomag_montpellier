@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: velo-db
+    environment:
+      POSTGRES_USER: velo
+      POSTGRES_PASSWORD: velo
+      POSTGRES_DB: velo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: velo-backend
+    environment:
+      DATABASE_URL: postgres://velo:velo@db:5432/velo_db
+    depends_on:
+      - db
+    # pour l’instant on ne lance pas encore l’API, juste un "sleep" pour garder le conteneur en vie
+    command: ["sleep", "infinity"]
+    volumes:
+      - ./backend:/app
+
+volumes:
+  db-data:
