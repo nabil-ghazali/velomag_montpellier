@@ -129,32 +129,41 @@ class VelomagAPI:
 
         df_final = pd.concat(data, ignore_index=True)
         return df_final
-# # ---------------------------------------------------------
-# # Bloc de test
-# # ---------------------------------------------------------
-# if __name__ == "__main__":
-#     # Créer une instance de l'API
-#     api = VelomagAPI()
+# ---------------------------------------------------------
+# Bloc de test
+# ---------------------------------------------------------
+if __name__ == "__main__":
+    import os
+    # Créer une instance de l'API
+    api = VelomagAPI()
 
-#     # 1️ Récupérer la liste des compteurs
-#     counters = api.fetch_all_counters()
-#     print("Liste des compteurs (5 premiers) :", counters[:5])  # affiche seulement les 5 premiers
+    # 1️ Récupérer la liste des compteurs
+    counters = api.fetch_all_counters()
+    print("Liste des compteurs (5 premiers) :", counters[:5])  # affiche seulement les 5 premiers
 
-#     # 2️ Tester la récupération d'une série temporelle pour le premier compteur
-#     if counters:
-#         counter_id = counters[0]
-#         df_ts = api.fetch_counter_timeseries(counter_id, "2024-11-30T00:00:00", "2024-12-01T23:59:59")
-#         print(f"\nPremières lignes de la série temporelle pour {counter_id} :")
-#         print(df_ts.head())
+    # 2️ Tester la récupération d'une série temporelle pour le premier compteur
+    if counters:
+        counter_id = counters[0]
+        df_ts = api.fetch_counter_timeseries(counter_id, "2024-11-30T00:00:00", "2024-12-01T23:59:59")
+        print(f"\nPremières lignes de la série temporelle pour {counter_id} :")
+        print(df_ts.head())
 
-#         # 3️ Tester la récupération de la description
-#         desc = api.fetch_counter_description(counter_id)
-#         print(f"\nDescription du compteur {counter_id} :")
-#         print(desc)
+        # 3️ Tester la récupération de la description
+        desc = api.fetch_counter_description(counter_id)
+        print(f"\nDescription du compteur {counter_id} :")
+        print(desc)
 
-#     # 4️ Tester fetch_all_data (optionnel : peut être long)
-#     df_all = api.fetch_all_data("2024-11-30T00:00:00")
-#     print(f"\nNombre total de lignes récupérées : {len(df_all)}")
+    # 4️ Récupérer toutes les données
+    df_all = api.fetch_all_data("2024-11-30T00:00:00")
+    print(f"\nNombre total de lignes récupérées : {len(df_all)}")
+
+    # 5️ Sauvegarder les données dans un CSV pour le pipeline
+    if not df_all.empty:
+        os.makedirs("../data/raw", exist_ok=True)  # créer le dossier si nécessaire
+        path_csv = "../data/raw/velo_data.csv"
+        df_all.to_csv(path_csv, index=False)
+        print(f"Données sauvegardées dans {path_csv}")
+
 
 
 
