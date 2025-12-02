@@ -4,3 +4,5 @@ requests
 pandas
 #prophet  
 python-dotenv
+scikit-learn
+joblib
