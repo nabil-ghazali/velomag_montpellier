@@ -1,5 +1,4 @@
 from sqlalchemy import Table, Column, Integer, String, DateTime, MetaData, Float, Boolean, NullPool, create_engine, text
-from supabase import create_client, Client
 
 class Database:
 
@@ -10,7 +9,7 @@ class Database:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, url: str, service_key: str, database_url: str = DATABASE_URL):
+    def __init__(self, database_url: str):
         if getattr(self, "_initialized", False):
             return
 
@@ -18,8 +17,6 @@ class Database:
 
         self.metadata = MetaData()
         self.engine = create_engine(database_url, poolclass=NullPool)
-
-        self.client: Client = create_client(url, service_key)
 
         self.counters_raw = None
         self.counters_clean = None

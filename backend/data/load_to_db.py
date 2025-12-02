@@ -1,8 +1,19 @@
-from database.schemas import Database
+from backend.database.schemas import Database
 import os
+from dotenv import load_dotenv
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 
-db = schemas.Database(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+# Load environment variables from .env
+load_dotenv()
+
+# Fetch variables
+USER = os.getenv("user")
+PASSWORD = os.getenv("password")
+HOST = os.getenv("host")
+PORT = os.getenv("port")
+DBNAME = os.getenv("dbname")
+
+DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
+
+db = Database(DATABASE_URL)
 db.create_tables()
