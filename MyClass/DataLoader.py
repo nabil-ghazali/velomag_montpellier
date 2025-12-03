@@ -21,8 +21,8 @@ class DataLoader:
             f"https://archive-api.open-meteo.com/v1/era5?"
             f"latitude={latitude}&longitude={longitude}"
             f"&start_date={start_date}&end_date={end_date}"
-            f"&daily=temperature_2m_max,temperature_2m_min,shortwave_radiation_sum"
-            f"&timezone=Europe/Paris"
+            f"&hourly=temperature_2m,wind_speed_10m,precipitation"
+  
         )
 
         try:
@@ -31,25 +31,52 @@ class DataLoader:
 
             data = response.json()
             
-            if "daily" not in data:
-                print(" Erreur : clé 'daily' manquante dans le JSON")
-                return None
+            # if "hourly" not in data:
+            #     print(" Erreur : clé 'daily' manquante dans le JSON")
+            #     return None
 
-            # Conversion en DataFrame
-            self.meteo_df = pd.DataFrame(data["daily"])
+            # # Conversion en DataFrame
+            # self.meteo_df = pd.DataFrame(data["hourly"])
             
-            # Nettoyage des types
-            self.meteo_df['time'] = pd.to_datetime(self.meteo_df['time'])
+            # # Nettoyage des types
+            # self.meteo_df['time'] = pd.to_datetime(self.meteo_df['time'])
             
-            # Renommage pour cohérence (optionnel mais conseillé)
-            self.meteo_df = self.meteo_df.rename(columns={'time': 'date'})
+            # # Renommage pour cohérence (optionnel mais conseillé)
+            # self.meteo_df = self.meteo_df.rename(columns={'time': 'date'})
 
-            print(f" Météo chargée : {len(self.meteo_df)} jours récupérés.")
-            return self.meteo_df
+            # print(f" Météo chargée : {len(self.meteo_df)} jours récupérés.")
+            return data
 
         except requests.exceptions.RequestException as e:
             print(f" Erreur de connexion API Météo : {e}")
             return None
+        
+    def process_weather_data(self, json_data):
+        """
+        Extrait uniquement les données horaires et crée une série temporelle propre.
+        """
+        # 1. Extraction Ciblée
+        # On plonge directement dans la clé 'hourly'. On ignore le reste pour l'instant.
+        hourly_data = json_data['hourly']
+        
+        # 2. Création du DataFrame
+        # Comme hourly_data est un dictionnaire de listes de même longueur, 
+        # Pandas va créer les colonnes parfaitement.
+        df = pd.DataFrame(hourly_data)
+
+        # 3. Renommage de la colonne
+        # 'columns' spécifie les changements, 'inplace=True' applique la modification directement au DataFrame
+        df.rename(columns={'time':'datetime'}, inplace=True)
+        print(f"Colonne '{'time'}' renommée en '{'datetime'}' avec succès.")
+
+        # 3. Nettoyage (Typage et Index)
+        # Conversion du texte en vraies dates
+        df['datetime'] = pd.to_datetime(df['datetime'])
+        
+        # On met le temps en index (axe des lignes)
+        df = df.set_index('datetime')
+        
+        return df
 
     def load_jours_feries(self, annee: int):
         """
@@ -132,6 +159,7 @@ loader = DataLoader()
 
 # loader.export_data(df_feries_2024, "data/jours_feries_2025.csv")
 # 3. Chargement Météo (Test)
-df_meteo = loader.load_meteo()
-print(df_meteo.head(10))
+meteo_json = loader.load_meteo()
+# print(meteo_json)
+df_meteo = loader.process_weather_data(meteo_json)
 loader.export_data(df_meteo, "data/meteo_mtp.csv")
