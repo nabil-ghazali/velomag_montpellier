@@ -22,16 +22,23 @@ class VeloPipeline:
         df = self.df_velo.drop_duplicates().copy()
         df['datetime'] = pd.to_datetime(df['datetime'])
         df['intensity'] = pd.to_numeric(df['intensity'], errors='coerce')
+        
+        # Clipper les valeurs extrêmes
+        df['intensity'] = df['intensity'].clip(lower=0, upper=300)
+        
+        # Tri et interpolation par compteur
+        df = df.sort_values(['counter_id', 'datetime'])
+        df['intensity'] = df.groupby('counter_id')['intensity'].transform(
+            lambda x: x.interpolate(method='linear')
+        )
+        
+        # Colonnes temporelles
         df['hour'] = df['datetime'].dt.hour
         df['weekday'] = df['datetime'].dt.weekday
         df['is_weekend'] = df['weekday'].isin([5, 6]).astype(int)
-
-        df['intensity'] = df.groupby('counter_id')['intensity'].transform(
-            lambda x: np.where(x > 300, np.nanmedian(x), x)
-        )
+        
         self.df_clean = df
         return df
-
     # ---------------------------------------------------------
     # 2️ Catégorisation des compteurs
     # ---------------------------------------------------------
@@ -57,14 +64,24 @@ class VeloPipeline:
     # 3️ Feature engineering
     # ---------------------------------------------------------
     def add_features(self, df: pd.DataFrame):
-        df = df.copy()  # force une copie indépendante pour éviter le warning
-        df['rolling_3h'] = df.groupby('counter_id')['intensity'].transform(
-            lambda x: x.rolling(3, min_periods=1).mean()
-        )
-        df['lag_1h'] = df.groupby('counter_id')['intensity'].shift(1)
-        df['lag_24h'] = df.groupby('counter_id')['intensity'].shift(24)
-        df['pct_change_1h'] = df.groupby('counter_id')['intensity'].pct_change()
+        df = df.copy()
+        
+        # Lags journaliers uniquement
+        df['lag_1d'] = df.groupby('counter_id')['intensity'].shift(24)
+        df['lag_7d'] = df.groupby('counter_id')['intensity'].shift(24*7)
+        # Optionnel : d'autres lags journaliers
+        # df['lag_14d'] = df.groupby('counter_id')['intensity'].shift(24*14)
+        
         return df
+    # def add_features(self, df: pd.DataFrame):
+    #     df = df.copy()  # force une copie indépendante pour éviter le warning
+    #     df['rolling_3h'] = df.groupby('counter_id')['intensity'].transform(
+    #         lambda x: x.rolling(3, min_periods=1).mean()
+    #     )
+    #     df['lag_1h'] = df.groupby('counter_id')['intensity'].shift(1)
+    #     df['lag_24h'] = df.groupby('counter_id')['intensity'].shift(24)
+    #     df['pct_change_1h'] = df.groupby('counter_id')['intensity'].pct_change()
+    #     return df
 
     # ---------------------------------------------------------
     # 4️ Fusion avec météo
@@ -91,7 +108,8 @@ class VeloPipeline:
 
         df_clean_copy = self.df_clean.copy()
         features_copy = df_clean_copy[['counter_id', 'datetime', 'intensity',
-                                    'rolling_3h', 'lag_1h', 'lag_24h', 'pct_change_1h']].copy()
+                                'lag_1d', 'lag_7d']].copy()
+
 
         df_clean_copy.to_csv(path_clean, index=False)
         features_copy.to_csv(path_features, index=False)
