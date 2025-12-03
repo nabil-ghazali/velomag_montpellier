@@ -10,7 +10,7 @@ class DataLoader:
         self.meteo_df = None
         self.feries_df = None
 
-    def load_meteo(self, start_date, end_date, latitude, longitude):
+    def load_meteo(self, start_date='2024-11-30', end_date='2025-12-01', latitude=43.6109, longitude=3.8763):
         """
         Charge les données météo historiques depuis Open-Meteo ERA5.
         Retourne un DataFrame Pandas nettoyé.
@@ -124,12 +124,14 @@ loader = DataLoader()
 
 # 2. Chargement Jours Fériés (Test)
 # Attention : la méthode a besoin de 'self' implicitement, donc on l'appelle sur l'instance 'loader'
-df_feries_2024 = loader.load_jours_feries(2025)
+# df_feries_2024 = loader.load_jours_feries(2025)
 
-print("\n--- Aperçu Jours Fériés ---")
-if df_feries_2024 is not None:
-    print(df_feries_2024.head())
+# print("\n--- Aperçu Jours Fériés ---")
+# if df_feries_2024 is not None:
+#     print(df_feries_2024.head())
 
-loader.export_data(df_feries_2024, "data/jours_feries_2025.csv")
+# loader.export_data(df_feries_2024, "data/jours_feries_2025.csv")
 # 3. Chargement Météo (Test)
-# df_meteo = loader.load_meteo("2024-01-01", "2024-01-31", 43.61, 3.87)
+df_meteo = loader.load_meteo()
+print(df_meteo.head(10))
+loader.export_data(df_meteo, "data/meteo_mtp.csv")
