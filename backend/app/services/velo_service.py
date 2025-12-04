@@ -73,16 +73,6 @@ class VeloPipeline:
         # df['lag_14d'] = df.groupby('counter_id')['intensity'].shift(24*14)
         
         return df
-    # def add_features(self, df: pd.DataFrame):
-    #     df = df.copy()  # force une copie indépendante pour éviter le warning
-    #     df['rolling_3h'] = df.groupby('counter_id')['intensity'].transform(
-    #         lambda x: x.rolling(3, min_periods=1).mean()
-    #     )
-    #     df['lag_1h'] = df.groupby('counter_id')['intensity'].shift(1)
-    #     df['lag_24h'] = df.groupby('counter_id')['intensity'].shift(24)
-    #     df['pct_change_1h'] = df.groupby('counter_id')['intensity'].pct_change()
-    #     return df
-
     # ---------------------------------------------------------
     # 4️ Fusion avec météo
     # ---------------------------------------------------------
