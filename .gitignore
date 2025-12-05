@@ -2,6 +2,9 @@ data/
 docs/
 notebooks/EDA.ipynb/
 notebooks/modele/
+# Modèles ML lourds
+notebooks/modele/*.pkl
+notebooks/modele/catboost_info/
 
 # les extensions de fichiers lourds à .gitignore
 echo "*.pkl" >> .gitignore
