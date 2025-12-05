@@ -1,23 +1,18 @@
 import requests
 import pandas as pd
-from datetime import datetime, timedelta
-from dotenv import load_dotenv
-import os
+from datetime import datetime
 
+class FetchAPI:
 
-class VelomagAPI:
-
-    def __init__(self):
-        load_dotenv()
+    def __init__(self, url):
         self.session = requests.Session()
-        self.BASE_URL = os.getenv("OPEN_DATA_API_KEY")
+        self.url = url
 
     # ---------------------------------------------------------
     # 1️ Récupérer la liste des compteurs
     # ---------------------------------------------------------
     def fetch_all_counters(self) -> list:
-        url = self.BASE_URL
-        response = self.session.get(url)
+        response = self.session.get(self.url)
 
         if response.status_code != 200:
             print("Erreur récupération liste des compteurs :", response.status_code)
@@ -39,11 +34,11 @@ class VelomagAPI:
     # 2️ Récupérer les séries temporelles d’un compteur
     # ---------------------------------------------------------
     def fetch_counter_timeseries(self, counter_id: str, from_date: str, to_date: str) -> pd.DataFrame:
-        url = f"https://portail-api-data.montpellier3m.fr/ecocounter_timeseries/{counter_id}/attrs/intensity"
+        url_timeseries = f"https://portail-api-data.montpellier3m.fr/ecocounter_timeseries/{counter_id}/attrs/intensity"
 
         params = {"fromDate": from_date, "toDate": to_date}
 
-        response = self.session.get(url, params=params)
+        response = self.session.get(url_timeseries, params=params)
 
         if response.status_code != 200:
             print(f"Erreur séries temporelles pour {counter_id} : {response.status_code}")
@@ -74,8 +69,8 @@ class VelomagAPI:
     # 3️ Récupérer la description d’un compteur
     # ---------------------------------------------------------
     def fetch_counter_description(self, counter_id: str) -> dict:
-        url = f"{self.BASE_URL}{counter_id}"
-        response = self.session.get(url)
+        url_desc = f"{self.url}{counter_id}"
+        response = self.session.get(url_desc)
 
         if response.status_code != 200:
             print(f"Erreur description pour {counter_id} : {response.status_code}")
@@ -97,12 +92,55 @@ class VelomagAPI:
             "laneId": laneId,
             "vehicleType": vehicleType
         }
+    
+    def fetch_meteo(self, start_date, end_date, latitude:str, longitude:str) -> pd.DataFrame:
+        
+        if end_date is None:
+            end_date = datetime.now().strftime("%Y-%m-%d")
 
-    # ---------------------------------------------------------
-    # 4️ Récupérer TOUTES les données (loop complète)
-    # ---------------------------------------------------------
-    def fetch_all_data(self, start_date="2024-11-30T00:00:00") -> pd.DataFrame:
-        end_date = datetime.now().strftime("%Y-%m-%dT23:59:59")
+        """
+        Charge les données météo historiques depuis Open-Meteo ERA5.
+        Retourne un DataFrame Pandas nettoyé.
+        """
+        print(f" Chargement de la météo pour {latitude}, {longitude}...")
+        
+        url_meteo = (
+            f"https://archive-api.open-meteo.com/v1/era5?"
+            f"latitude={latitude}&longitude={longitude}"
+            f"&start_date={start_date}&end_date={end_date}"
+            f"&daily=temperature_2m_max,temperature_2m_min,shortwave_radiation_sum"
+            f"&timezone=Europe/Paris"
+        )
+
+        try:
+            response = requests.get(url_meteo, timeout=10) # Toujours mettre un timeout !
+            response.raise_for_status() # Lève une erreur si code != 200
+
+            data = response.json()
+            
+            if "daily" not in data:
+                print(" Erreur : clé 'daily' manquante dans le JSON")
+                return None
+
+            # Conversion en DataFrame
+            self.meteo_df = pd.DataFrame(data["daily"])
+            
+            # Nettoyage des types
+            self.meteo_df['time'] = pd.to_datetime(self.meteo_df['time'])
+            
+            # Renommage pour cohérence (optionnel mais conseillé)
+            self.meteo_df = self.meteo_df.rename(columns={'time': 'datetime'})
+
+            print(f" Météo chargée : {len(self.meteo_df)} jours récupérés.")
+            return self.meteo_df
+
+        except requests.exceptions.RequestException as e:
+            print(f" Erreur de connexion API Météo : {e}")
+            return None
+
+    def fetch_all_data_velo(self, start_date="2024-11-30T00:00:00", end_date = None) -> pd.DataFrame:
+        if end_date is None:
+            end_date = datetime.now().strftime("%Y-%m-%dT23:59:59")
         counters = self.fetch_all_counters()
         data = []
 
@@ -131,37 +169,3 @@ class VelomagAPI:
 
         df_final = pd.concat(data, ignore_index=True)
         return df_final
-# ---------------------------------------------------------
-# Bloc de test
-# ---------------------------------------------------------
-if __name__ == "__main__":
-    import os
-    # Créer une instance de l'API
-    api = VelomagAPI()
-
-    # 1️ Récupérer la liste des compteurs
-    counters = api.fetch_all_counters()
-    print("Liste des compteurs (5 premiers) :", counters[:5])  # affiche seulement les 5 premiers
-
-    # 2️ Tester la récupération d'une série temporelle pour le premier compteur
-    if counters:
-        counter_id = counters[0]
-        df_ts = api.fetch_counter_timeseries(counter_id, "2024-11-30T00:00:00", "2024-12-01T23:59:59")
-        print(f"\nPremières lignes de la série temporelle pour {counter_id} :")
-        print(df_ts.head())
-
-        # 3️ Tester la récupération de la description
-        desc = api.fetch_counter_description(counter_id)
-        print(f"\nDescription du compteur {counter_id} :")
-        print(desc)
-
-    # 4️ Récupérer toutes les données
-    df_all = api.fetch_all_data("2024-11-30T00:00:00")
-    print(f"\nNombre total de lignes récupérées : {len(df_all)}")
-
-    # 5️ Sauvegarder les données dans un CSV pour le pipeline
-    if not df_all.empty:
-        os.makedirs("../data/raw", exist_ok=True)  # créer le dossier si nécessaire
-        path_csv = "../data/raw/velo_data.csv"
-        df_all.to_csv(path_csv, index=False)
-        print(f"Données sauvegardées dans {path_csv}")

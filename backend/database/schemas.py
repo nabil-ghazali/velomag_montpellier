@@ -1,4 +1,5 @@
 from sqlalchemy import Table, Column, Integer, String, DateTime, MetaData, Float, Boolean, NullPool, create_engine, text
+import pandas as pd
 
 class Database:
 
@@ -18,20 +19,20 @@ class Database:
         self.metadata = MetaData()
         self.engine = create_engine(database_url, poolclass=NullPool)
 
-        self.counters_raw = None
-        self.counters_clean = None
+        self.velo_raw = None
+        self.velo_clean = None
         self.meteo_raw = None
         self.meteo_clean = None
         self.model_data = None
 
     def create_tables(self):
 
-        self.counters_clean = Table(
-            "counters_clean",
+        self.velo_clean = Table(
+            "velo_clean",
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
-            Column("counter_id", String, unique=True, nullable=False),
+            Column("counter_id", String, nullable=False),
             Column("intensity", Float, nullable=False),
             Column("lat", Float, nullable=True),
             Column("lon", Float, nullable=True),
@@ -40,8 +41,8 @@ class Database:
             Column("hour", Integer, nullable=True),
         )
 
-        self.counters_raw = Table(
-            "counters_raw",
+        self.velo_raw = Table(
+            "velo_raw",
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
@@ -58,8 +59,8 @@ class Database:
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
-            Column("temperature_2m", Float, nullable=False),
-            Column("wind_speed_10m", Float, nullable=False),
+            Column("temperature_2m", Float, nullable=True),
+            Column("wind_speed_10m", Float, nullable=True),
             Column("precipitation", Float, nullable=True),
         )
 
@@ -68,8 +69,8 @@ class Database:
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
-            Column("temperature_2m", Float, nullable=False),
-            Column("wind_speed_10m", Float, nullable=False),
+            Column("temperature_2m", Float, nullable=True),
+            Column("wind_speed_10m", Float, nullable=True),
             Column("precipitation", Float, nullable=True),
         )
 
@@ -85,8 +86,8 @@ class Database:
 
         with self.engine.begin() as conn:
             for table in [
-                self.counters_raw,
-                self.counters_clean,
+                self.velo_raw,
+                self.velo_clean,
                 self.meteo_raw,
                 self.meteo_clean,
                 self.model_data,
@@ -99,10 +100,25 @@ class Database:
 
     def drop_tables(self, name: str = None):
         if name is None:
+            self.metadata.reflect(self.engine)
             self.metadata.drop_all(self.engine)
         else:
             table = Table(name, self.metadata, autoload_with=self.engine)
             table.drop(self.engine, checkfirst=True)
+
+    
+    def push_data(self, df: pd.DataFrame, table_name: str):
+        self.metadata.reflect(self.engine)
+        table = self.metadata.tables.get(table_name)
+        if table is None:
+            raise ValueError(f"La table '{table_name}' n'existe pas sur Database")
+
+        with self.engine.begin() as conn:
+            conn.execute(
+                table.insert(),
+                df.to_dict(orient="records")
+            )
+        
 
            
 
