@@ -283,7 +283,7 @@ class ConvertData:
 
 
 # 1. Initialisation de la classe avec les chemins de fichiers
-converter = ConvertData(first_path='data/jours_feries_2024.csv', second_path='data/jours_feries_2025.csv')
+converter = ConvertData(first_path='data/velo_data.csv', second_path='data/meteo_mtp.csv')
 
 # 2. Lancement du traitement avec les dates (tu peux mettre tes widgets ici)
 df_resultat = converter.process_merge_uniform_dataframes(start_date="2024-11-30", end_date="2025-12-01")
@@ -300,13 +300,13 @@ loader = DataLoader()
 # Supposons que tu as déjà ton df_feries_complet (celui créé à l'étape précédente)
 df_input = df_resultat 
 
-# # Lancement
-df_resultat_bool = converter.get_holiday_boolean_mask(
-    df_input, 
-    start_date="2024-12-24", 
-    end_date="2025-12-01",
-    freq='h' # 'h' pour avoir une ligne par heure (comme ton exemple 09:00:00)
-)
-print(df_resultat_bool.head(24)) # Affiche les 24 premières heures
+# # # Lancement
+# df_resultat_bool = converter.get_holiday_boolean_mask(
+#     df_input, 
+#     start_date="2024-12-24", 
+#     end_date="2025-12-01",
+#     freq='h' # 'h' pour avoir une ligne par heure (comme ton exemple 09:00:00)
+# )
+# print(df_resultat_bool.head(24)) # Affiche les 24 premières heures
 
-loader.export_data(df_resultat_bool, "data/jour_feries_to_bool.csv")
+# loader.export_data(df_resultat_bool, "data/jour_feries_to_bool.csv")

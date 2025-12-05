@@ -161,7 +161,9 @@ if __name__ == "__main__":
     if not df_all.empty:
         os.makedirs("data/", exist_ok=True)  # créer le dossier si nécessaire
         path_csv = "data/velo_data.csv"
-        df_all.to_csv(path_csv, index=False)
+        df_all.to_csv(
+            path_csv, index=False, sep=';'
+            )
         print(f"Données sauvegardées dans {path_csv}")
 
 
