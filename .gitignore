@@ -3,6 +3,15 @@ docs/
 notebooks/EDA.ipynb/
 notebooks/modele/
 
+# les extensions de fichiers lourds à .gitignore
+echo "*.pkl" >> .gitignore
+echo "*.h5" >> .gitignore
+echo "*.model" >> .gitignore
+echo "*.joblib" >> .gitignore
+
+# ignorer spécifiquement le fichier
+echo "notebooks/modele_pkl" >> .gitignore
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
