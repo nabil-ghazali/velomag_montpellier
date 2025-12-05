@@ -1,0 +1,9 @@
+notebooks/modele[[:space:]]/rf_model_sans_filtre.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/modele[[:space:]]/rf_model_365.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/modele[[:space:]]/model_random_forest.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/modele[[:space:]]/xgb_model__sans_filtre.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/modele[[:space:]]/xgb_model_365.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/modele[[:space:]]/model_xgboost_best.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/modele[[:space:]]/cb_model__sans_filtre.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/modele[[:space:]]/cb_model_365.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/modele[[:space:]]/catboost_info/prophet_model.pkl filter=lfs diff=lfs merge=lfs -text
