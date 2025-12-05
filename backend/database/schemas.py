@@ -59,9 +59,9 @@ class Database:
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
-            Column("temperature_2m", Float, nullable=True),
-            Column("wind_speed_10m", Float, nullable=True),
-            Column("precipitation", Float, nullable=True),
+            Column("temperature_2m_max", Float, nullable=True),
+            Column("temperature_2m_min", Float, nullable=True),
+            Column("shortwave_radiation_sum", Float, nullable=True),
         )
 
         self.meteo_clean = Table(
@@ -69,9 +69,9 @@ class Database:
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
-            Column("temperature_2m", Float, nullable=True),
-            Column("wind_speed_10m", Float, nullable=True),
-            Column("precipitation", Float, nullable=True),
+            Column("temperature_2m_max", Float, nullable=True),
+            Column("temperature_2m_min", Float, nullable=True),
+            Column("shortwave_radiation_sum", Float, nullable=True),
         )
 
         self.model_data = Table(
@@ -118,7 +118,18 @@ class Database:
                 table.insert(),
                 df.to_dict(orient="records")
             )
+    
+    def pull_data(self, table_name: str) -> pd.DataFrame:
+        self.metadata.reflect(self.engine)
+        table = self.metadata.tables.get(table_name)
+        if table is None:
+            raise ValueError(f"La table '{table_name}' n'existe pas sur Database")
+
+        with self.engine.begin() as conn:
+            result = conn.execute(table.select())
+            df = pd.DataFrame(result.fetchall(), columns=result.keys())
         
+        return df
 
            
 

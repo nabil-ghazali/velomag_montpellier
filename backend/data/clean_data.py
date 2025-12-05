@@ -51,6 +51,7 @@ class DataCleaning:
         df['datetime'] = df['datetime'].dt.tz_convert('UTC')
         # 3. On retire la timezone
         df['datetime'] = df['datetime'].dt.tz_localize(None)
+        print(df.head())
         return df
 
         

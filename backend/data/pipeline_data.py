@@ -27,6 +27,8 @@ latitude=43.6119
 longitude=3.8772
 
 db = Database(DATABASE_URL)
+fetch = FetchAPI(OPEN_API_URL) #le url sera passé en argument de la classe
+clean = DataCleaning() #le dataframe sera passé en argument des fonctions
 
 @app.command()
 def delete_tables():
@@ -41,11 +43,8 @@ def create_tables():
     print("Tables créées avec succès.")
 
 @app.command()
-def fetch_and_load_velo():
+def push_velo():
     """Récupère les données depuis l'API et les charge dans la base de données."""
-
-    fetch = FetchAPI(OPEN_API_URL) #le url sera passé en argument de la classe
-    clean = DataCleaning() #le dataframe sera passé en argument des fonctions
 
     data_velo = fetch.fetch_all_data_velo()
     df_clean_velo = clean.clean_data_velo(data_velo)
@@ -54,11 +53,8 @@ def fetch_and_load_velo():
     db.push_data(df_clean_velo, "velo_clean")
 
 @app.command()
-def fetch_and_load_meteo():
+def push_meteo():
     """Récupère les données météo depuis l'API et les charge dans la base de données."""
-
-    fetch = FetchAPI(OPEN_API_URL) #le url sera passé en argument de la classe
-    clean = DataCleaning() #le dataframe sera passé en argument des fonctions
 
     data_meteo = fetch.fetch_meteo(start_date, end_date, latitude, longitude)
     df_clean_meteo = clean._standardize_to_UTC(data_meteo)
@@ -66,12 +62,8 @@ def fetch_and_load_meteo():
     db.push_data(df_clean_meteo, "meteo_clean")
 
 @app.command()
-def fetch_and_load_data():
+def push_db():
     """Récupère les données depuis l'API et les charge dans la base de données."""
-
-    db = Database(DATABASE_URL)
-    fetch = FetchAPI(OPEN_API_URL) #le url sera passé en argument de la classe
-    clean = DataCleaning() #le dataframe sera passé en argument des fonctions
 
     data_velo = fetch.fetch_all_data_velo()
     data_meteo = fetch.fetch_meteo(start_date, end_date, latitude, longitude)
@@ -85,3 +77,11 @@ def fetch_and_load_data():
     print("Données récupérées et chargées avec succès.")
 
 
+@app.command()
+def pull_db():
+    """Charge les données nettoyées dans la base de données."""
+    print("Fonction de chargement des données dans la base de données.")
+    df_velo_clean = db.pull_data("velo_clean")
+    df_meteo_clean = db.pull_data("meteo_clean")
+    print(f"Données Vélo nettoyées : {len(df_velo_clean)} enregistrements.")
+    print(f"Données Météo nettoyées : {len(df_meteo_clean)} enregistrements.")
