@@ -1,4 +1,4 @@
-from data.pipeline_data import app
+from backend.data.cli_data import app
 
 def main():
     app()

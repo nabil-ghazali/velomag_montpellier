@@ -27,6 +27,15 @@ class Database:
 
     def create_tables(self):
 
+        self.counters = Table(
+            "counters",
+            self.metadata,
+            Column("id", Integer, primary_key=True, autoincrement=True),
+            Column("counter_id", String, nullable=False),
+            Column("lat", Float, nullable=True),
+            Column("lon", Float, nullable=True),
+        )
+
         self.velo_clean = Table(
             "velo_clean",
             self.metadata,
