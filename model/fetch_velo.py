@@ -159,8 +159,8 @@ if __name__ == "__main__":
 
     # 5️ Sauvegarder les données dans un CSV pour le pipeline
     if not df_all.empty:
-        os.makedirs("data/", exist_ok=True)  # créer le dossier si nécessaire
-        path_csv = "data/velo_data.csv"
+        os.makedirs("data_files/", exist_ok=True)  # créer le dossier si nécessaire
+        path_csv = "data_files/velo_data.csv"
         df_all.to_csv(
             path_csv, index=False, sep=';'
             )

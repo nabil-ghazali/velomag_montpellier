@@ -82,4 +82,4 @@ def evaluer_compteur_specifique(path_train_data, counter_index=0):
     plt.show()
 
 if __name__ == "__main__":
-    evaluer_compteur_specifique('data/processed/features.csv', counter_index=0)
+    evaluer_compteur_specifique('data_files/processed/features.csv', counter_index=0)

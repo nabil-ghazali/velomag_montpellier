@@ -89,4 +89,4 @@ def evaluer_tous_les_compteurs(path_train_data):
     print("\n Analyse terminée ! Voir 'output/performance_globale.csv' et le dossier 'output/plots/'")
 
 if __name__ == "__main__":
-    evaluer_tous_les_compteurs('data/train_data.csv')
+    evaluer_tous_les_compteurs('data_files/train_data.csv')

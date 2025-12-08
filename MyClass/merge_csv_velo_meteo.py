@@ -53,13 +53,13 @@ def merge_velo_meteo(path_velo, path_meteo):
 if __name__ == "__main__":
     try:
         # Remplace par tes chemins réels
-        df_final = merge_velo_meteo('data/velo_data.csv', 'data/meteo_mtp.csv')
+        df_final = merge_velo_meteo('_files/velo_data.csv', 'data_files/meteo_mtp.csv')
         
         print("✅ Fusion réussie !")
         print(df_final[['datetime', 'intensity', 'temperature_2m']].head())
         
         # Sauvegarde
-        df_final.to_csv('data/merged_data.csv', index=False, sep=';')
+        df_final.to_csv('data_files/merged_data.csv', index=False, sep=';')
         
     except Exception as e:
         print(f"❌ Erreur : {e}")

@@ -112,7 +112,7 @@ if __name__ == "__main__":
     # 1. On charge le fichier FUSIONNÉ (attention au séparateur !)
     # Si ton merge précédent a utilisé sep=';', on le garde ici.
     print("Chargement des données fusionnées...")
-    df_merged = pd.read_csv("data/merged_data.csv", sep=';')
+    df_merged = pd.read_csv("data_files/merged_data.csv", sep=';')
     
     # 2. On lance la pipeline
     print("Génération des features...")
@@ -123,5 +123,5 @@ if __name__ == "__main__":
     print(f"Dimensions finales : {df_features.shape}")
     
     # 4. Sauvegarde finale pour l'entraînement
-    df_features.to_csv("data/train_data.csv", index=False, sep=';')
-    print("Fichier prêt pour l'entraînement : data/processede/train_data_chaima.csv")
+    df_features.to_csv("data_files/train_data.csv", index=False, sep=';')
+    print("Fichier prêt pour l'entraînement : data_files/processed/train_data_chaima.csv")

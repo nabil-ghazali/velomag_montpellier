@@ -82,8 +82,8 @@ class VeloPipeline:
     # 5️ Export des datasets
     # ---------------------------------------------------------
     def export_data(self,
-                    path_clean="data/processed/data_clean.csv",
-                    path_features="data/processed/features.csv"):
+                    path_clean="data_files/processed/data_clean.csv",
+                    path_features="data_files/processed/features.csv"):
 
         # Créer les dossiers si inexistants
         os.makedirs(os.path.dirname(path_clean), exist_ok=True)
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     try:
         print("Chargement vélo...")
         # CRUCIAL : sep=';'
-        df_velo = pd.read_csv("data/velo_data.csv", sep=';')
+        df_velo = pd.read_csv("data_files/velo_data.csv", sep=';')
         
         # Nettoyage Date Vélo : On gère le '+00:00' (UTC) et on le retire pour avoir une date naïve
         # df_velo['datetime'] = pd.to_datetime(df_velo['datetime'], utc=True).dt.tz_localize(None)
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     try:
         print("Chargement météo...")
         # CRUCIAL : sep=';' ET decimal=',' (sinon '5,8' devient du texte)
-        df_meteo = pd.read_csv("data/meteo_mtp.csv", sep=';', decimal=',')
+        df_meteo = pd.read_csv("data_files/meteo_mtp.csv", sep=';', decimal=',')
         
         # Nettoyage Date Météo : Format standard YYYY-MM-DD HH:MM:SS
         # df_meteo['datetime'] = pd.to_datetime(df_meteo['datetime'])

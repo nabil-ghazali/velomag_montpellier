@@ -116,4 +116,4 @@ def train_prophet_optimized(file_path, counter_index=0):
 # --- EXECUTION ---
 if __name__ == "__main__":
     # Assure-toi que le fichier existe (celui généré à l'étape précédente)
-    model, preds = train_prophet_optimized('data/train_data.csv')
+    model, preds = train_prophet_optimized('data_files/train_data.csv')

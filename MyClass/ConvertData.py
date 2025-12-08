@@ -283,7 +283,7 @@ class ConvertData:
 
 
 # 1. Initialisation de la classe avec les chemins de fichiers
-converter = ConvertData(first_path='data/velo_data.csv', second_path='data/meteo_mtp.csv')
+converter = ConvertData(first_path='data_files/velo_data.csv', second_path='data_files/meteo_mtp.csv')
 
 # 2. Lancement du traitement avec les dates (tu peux mettre tes widgets ici)
 df_resultat = converter.process_merge_uniform_dataframes(start_date="2024-11-30", end_date="2025-12-01")
