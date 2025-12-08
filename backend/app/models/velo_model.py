@@ -8,6 +8,8 @@ from xgboost import XGBRegressor
 from catboost import CatBoostRegressor
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 import joblib
+import mlflow
+import mlflow.sklearn
 
 class VeloModelTrainer:
     """
@@ -22,6 +24,9 @@ class VeloModelTrainer:
         self.data_path = Path(data_path)
         self.model_dir = Path(model_dir)
         self.model_dir.mkdir(parents=True, exist_ok=True)
+        # Configuration MLflow
+        mlflow.set_tracking_uri("file:../../mlruns")
+        mlflow.set_experiment("Velo_Model_Experiment")
 
     # ----------------------------------------------------------
     # 1. Charger les données préparées
@@ -98,15 +103,33 @@ class VeloModelTrainer:
     # 5. Entraînement modèles
     # ----------------------------------------------------------
     def train_models(self, X_train, y_train):
-        rf = RandomForestRegressor(n_estimators=200, max_depth=15, random_state=42)
-        xgb = XGBRegressor(n_estimators=200, max_depth=6, learning_rate=0.1, random_state=42)
-        cb = CatBoostRegressor(iterations=500, depth=6, learning_rate=0.1, verbose=0)
+        models = {
+            "RandomForest": RandomForestRegressor(n_estimators=200, max_depth=15, random_state=42),
+            "XGBoost": XGBRegressor(n_estimators=200, max_depth=6, learning_rate=0.1, random_state=42),
+            "CatBoost": CatBoostRegressor(iterations=500, depth=6, learning_rate=0.1, verbose=0)
+        }
 
-        rf.fit(X_train, y_train)
-        xgb.fit(X_train, y_train)
-        cb.fit(X_train, y_train)
+        for name, model in models.items():
+            print(f"Training {name}…")
+            model.fit(X_train, y_train)
 
-        return {"RandomForest": rf, "XGBoost": xgb, "CatBoost": cb}
+            # Enregistrement dans MLflow
+            with mlflow.start_run(run_name=name):
+                mlflow.log_params(model.get_params())
+                mlflow.sklearn.log_model(model, artifact_path=f"{name}_model")
+                print(f"{name} sauvegardé dans MLflow ✔")
+
+        return models
+    # def train_models(self, X_train, y_train):
+    #     rf = RandomForestRegressor(n_estimators=200, max_depth=15, random_state=42)
+    #     xgb = XGBRegressor(n_estimators=200, max_depth=6, learning_rate=0.1, random_state=42)
+    #     cb = CatBoostRegressor(iterations=500, depth=6, learning_rate=0.1, verbose=0)
+
+    #     rf.fit(X_train, y_train)
+    #     xgb.fit(X_train, y_train)
+    #     cb.fit(X_train, y_train)
+
+    #     return {"RandomForest": rf, "XGBoost": xgb, "CatBoost": cb}
 
     # ----------------------------------------------------------
     # 6. Évaluation
@@ -114,10 +137,27 @@ class VeloModelTrainer:
     def evaluate(self, models, X_test, y_test):
         for name, model in models.items():
             y_pred = model.predict(X_test)
+            r2 = r2_score(y_test, y_pred)
+            mae = mean_absolute_error(y_test, y_pred)
+            rmse = mean_squared_error(y_test, y_pred) ** 0.5
+
             print(f"\n--- {name} ---")
-            print(f"R²   : {r2_score(y_test, y_pred):.4f}")
-            print(f"MAE  : {mean_absolute_error(y_test, y_pred):.2f}")
-            print(f"RMSE : {mean_squared_error(y_test, y_pred)**0.5:.2f}")
+            print(f"R²   : {r2:.4f}")
+            print(f"MAE  : {mae:.2f}")
+            print(f"RMSE : {rmse:.2f}")
+
+            with mlflow.start_run(run_name=f"{name}_eval"):
+                mlflow.log_metric("R2", r2)
+                mlflow.log_metric("MAE", mae)
+                mlflow.log_metric("RMSE", rmse)
+
+    # def evaluate(self, models, X_test, y_test):
+    #     for name, model in models.items():
+    #         y_pred = model.predict(X_test)
+    #         print(f"\n--- {name} ---")
+    #         print(f"R²   : {r2_score(y_test, y_pred):.4f}")
+    #         print(f"MAE  : {mean_absolute_error(y_test, y_pred):.2f}")
+    #         print(f"RMSE : {mean_squared_error(y_test, y_pred)**0.5:.2f}")
 
     # ----------------------------------------------------------
     # 7. Sauvegarde
@@ -128,7 +168,7 @@ class VeloModelTrainer:
 
         joblib.dump(self.label_encoder, self.model_dir / "labelencoder_counter.pkl")
 
-        print("\nModèles + LabelEncoder sauvegardés ✔")
+        print("\nModèles + LabelEncoder sauvegardés localement ✔")
 
     # ----------------------------------------------------------
     # PIPELINE COMPLET
@@ -152,14 +192,17 @@ class VeloModelTrainer:
         print("Évaluation…")
         self.evaluate(models, X_test, y_test)
 
-        print("Sauvegarde…")
+        print("Sauvegarde locale…")
         self.save(models)
 
         return models
 
 # bloc teste : 
-
 if __name__ == "__main__":
     trainer = VeloModelTrainer(data_path="../../data/processed/velo_data.csv",
                             model_dir="../../models")
     models = trainer.run()
+# if __name__ == "__main__":
+#     trainer = VeloModelTrainer(data_path="../../data/processed/velo_data.csv",
+#                             model_dir="../../models")
+#     models = trainer.run()

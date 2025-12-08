@@ -6,6 +6,7 @@ notebooks/modele/
 # Modèles ML lourds
 notebooks/modele/*.pkl
 notebooks/modele/catboost_info/
+mlruns/
 
 # les extensions de fichiers lourds à .gitignore
 echo "*.pkl" >> .gitignore
