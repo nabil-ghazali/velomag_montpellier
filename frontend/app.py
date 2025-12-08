@@ -41,7 +41,7 @@ df = get_predictions()
 
 if not df.empty:
     # --- FILTRES (Date uniquement) ---
-    st.sidebar.header("📅 Sélection")
+    st.sidebar.header(" Sélection")
     unique_dates = sorted(df['date'].unique())
     selected_date = st.sidebar.selectbox(
         "Choisir la date", 
@@ -62,7 +62,7 @@ if not df.empty:
     c3.metric("Température Moyenne", f"{temp_moy:.1f}°C")
 
     # --- CARTE (Trafic cumulé par compteur sur la journée) ---
-    st.subheader(f"📍 Carte du volume journalier ({selected_date.strftime('%d/%m')})")
+    st.subheader(f" Carte du volume journalier ({selected_date.strftime('%d/%m')})")
     
     # On agrège par compteur (somme des 24h)
     # .first() permet de garder lat/lon qui sont identiques pour chaque ligne du compteur
@@ -97,7 +97,7 @@ if not df.empty:
     st_folium(m, width=None, height=500)
 
     # --- GRAPHIQUE (Profil horaire de la journée) ---
-    st.subheader("📈 Profil horaire de la journée")
+    st.subheader(" Profil horaire de la journée")
     
     df_chart = df_day.groupby('hour')['predicted_intensity'].sum().reset_index()
     
