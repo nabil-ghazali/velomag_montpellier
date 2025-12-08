@@ -31,10 +31,6 @@ class VeloModelTrainer:
     # ----------------------------------------------------------
     # 1. Charger les données préparées
     # ----------------------------------------------------------
-    # def load_data(self):
-    #     df = pd.read_csv(self.data_path, parse_dates=["datetime"])
-    #     df = df.sort_values(["counter_id", "datetime"]).reset_index(drop=True)
-    #     return df
     def load_data(self):
         df = pd.read_csv(self.data_path, parse_dates=["datetime"])
         df = df.sort_values(["counter_id", "datetime"]).reset_index(drop=True)
@@ -48,6 +44,10 @@ class VeloModelTrainer:
                 df[col] = df[col].astype(str).str.replace(",", ".").astype(float)
 
         return df
+    # def load_data(self):
+    #     df = pd.read_csv(self.data_path, parse_dates=["datetime"])
+    #     df = df.sort_values(["counter_id", "datetime"]).reset_index(drop=True)
+    #     return df
     # ----------------------------------------------------------
     # 2. Filtrer compteurs fiables (≥ 365j)
     # ----------------------------------------------------------
@@ -120,17 +120,6 @@ class VeloModelTrainer:
                 print(f"{name} sauvegardé dans MLflow ✔")
 
         return models
-    # def train_models(self, X_train, y_train):
-    #     rf = RandomForestRegressor(n_estimators=200, max_depth=15, random_state=42)
-    #     xgb = XGBRegressor(n_estimators=200, max_depth=6, learning_rate=0.1, random_state=42)
-    #     cb = CatBoostRegressor(iterations=500, depth=6, learning_rate=0.1, verbose=0)
-
-    #     rf.fit(X_train, y_train)
-    #     xgb.fit(X_train, y_train)
-    #     cb.fit(X_train, y_train)
-
-    #     return {"RandomForest": rf, "XGBoost": xgb, "CatBoost": cb}
-
     # ----------------------------------------------------------
     # 6. Évaluation
     # ----------------------------------------------------------
@@ -202,7 +191,3 @@ if __name__ == "__main__":
     trainer = VeloModelTrainer(data_path="../../data/processed/velo_data.csv",
                             model_dir="../../models")
     models = trainer.run()
-# if __name__ == "__main__":
-#     trainer = VeloModelTrainer(data_path="../../data/processed/velo_data.csv",
-#                             model_dir="../../models")
-#     models = trainer.run()
