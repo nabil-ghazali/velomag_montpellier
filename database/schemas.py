@@ -62,15 +62,17 @@ class Database:
             Column("laneId", Integer, nullable=True),
             Column("vehicleType", String, nullable=True),
         )
-
+        
+# --- ANCIENNES TABLES (A REMPLACER) ---
+        
         self.meteo_raw = Table(
             "meteo_raw",
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
-            Column("temperature_2m_max", Float, nullable=True),
-            Column("temperature_2m_min", Float, nullable=True),
-            Column("shortwave_radiation_sum", Float, nullable=True),
+            Column("temperature_2m", Float, nullable=True),      # Nouvelle colonne
+            Column("wind_speed_10m", Float, nullable=True),      # Nouvelle colonne
+            Column("precipitation", Float, nullable=True),       # Nouvelle colonne
         )
 
         self.meteo_clean = Table(
@@ -78,10 +80,29 @@ class Database:
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
-            Column("temperature_2m_max", Float, nullable=True),
-            Column("temperature_2m_min", Float, nullable=True),
-            Column("shortwave_radiation_sum", Float, nullable=True),
+            Column("temperature_2m", Float, nullable=True),
+            Column("wind_speed_10m", Float, nullable=True),
+            Column("precipitation", Float, nullable=True),
         )
+        # self.meteo_raw = Table(
+        #     "meteo_raw",
+        #     self.metadata,
+        #     Column("id", Integer, primary_key=True, autoincrement=True),
+        #     Column("datetime", DateTime, nullable=False),
+        #     Column("temperature_2m_max", Float, nullable=True),
+        #     Column("temperature_2m_min", Float, nullable=True),
+        #     Column("shortwave_radiation_sum", Float, nullable=True),
+        # )
+
+        # self.meteo_clean = Table(
+        #     "meteo_clean",
+        #     self.metadata,
+        #     Column("id", Integer, primary_key=True, autoincrement=True),
+        #     Column("datetime", DateTime, nullable=False),
+        #     Column("temperature_2m_max", Float, nullable=True),
+        #     Column("temperature_2m_min", Float, nullable=True),
+        #     Column("shortwave_radiation_sum", Float, nullable=True),
+        # )
 
         self.model_data = Table(
             "model_data",

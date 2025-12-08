@@ -34,24 +34,46 @@ class DataCleaning:
         df['datetime'] = df['datetime'].dt.tz_localize(None)
         return df
 
+    # def _standardize_to_UTC(self, df):
+    #     """
+    #     Traite les dates Météo : De l'heure locale (Paris) vers UTC Naive.
+
+    #     Le principe : On reçoit l'heure locale, on essaie de la comprendre avec Python, ça plante sur l'heure d'été, on transforme l'erreur en NaT (Not a Time) et on supprime la ligne.
+
+    #     Avantage :
+    #     Lisibilité humaine immédiate : Si vous ouvrez le fichier CSV brut, vous voyez "14:00". Vous savez que c'est 14h à Montpellier. C'est intuitif.
+
+    #     Désavantages :
+    #     Perte de données (GRAVE) : C'est le point critique. Quand on passe à l'heure d'été, l'heure "02:00" n'existe pas au cadran, mais le temps, lui, continue de s'écouler. Il y a bien eu du vent et de la pluie pendant cette heure-là.
+
+    #     Votre code actuel supprime cette ligne. Votre modèle aura donc un "trou" dans les données météo.
+    #     """
+
+    #     df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
+        
+    #     # 1. On localise en Paris (Gère l'heure d'été/hiver)
+    #     df['datetime'] = df['datetime'].dt.tz_localize(
+    #         'Europe/Paris', 
+    #         ambiguous='NaT', 
+    #         nonexistent='NaT'
+    #     )
+    #     # 2. On convertit en UTC
+    #     df['datetime'] = df['datetime'].dt.tz_convert('UTC')
+    #     # 3. On retire la timezone
+    #     df['datetime'] = df['datetime'].dt.tz_localize(None)
+    #     print(df.head())
+    #     return df
+
+
     def _standardize_to_UTC(self, df):
         """
-        Traite les dates Météo : De l'heure locale (Paris) vers UTC Naive.
+        Traite les dates Météo : On s'assure juste que c'est au format date.
+        Comme l'API envoie déjà du UTC, on a rien d'autre à faire !
         """
-
         df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
         
-        # 1. On localise en Paris (Gère l'heure d'été/hiver)
-        df['datetime'] = df['datetime'].dt.tz_localize(
-            'Europe/Paris', 
-            ambiguous='NaT', 
-            nonexistent='NaT'
-        )
-        # 2. On convertit en UTC
-        df['datetime'] = df['datetime'].dt.tz_convert('UTC')
-        # 3. On retire la timezone
-        df['datetime'] = df['datetime'].dt.tz_localize(None)
-        print(df.head())
+        # On retire le fuseau horaire si Pandas l'a ajouté automatiquement (pour avoir du "naive")
+        if df['datetime'].dt.tz is not None:
+            df['datetime'] = df['datetime'].dt.tz_localize(None)
+            
         return df
-
-        
