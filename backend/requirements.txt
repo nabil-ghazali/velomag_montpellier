@@ -1,11 +1,13 @@
 fastapi
-uvicorn
 pandas
 numpy
 sqlalchemy
 psycopg2-binary
 scikit-learn
 joblib
-requests
 streamlit
 python-dotenv
+uvicorn
+uvicorn[standard]
+requests
+prophet  

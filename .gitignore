@@ -4,6 +4,21 @@
 /makefile
 /notebooks
 /data
+docs/
+notebooks/EDA.ipynb/
+notebooks/modele/
+# Modèles ML lourds
+notebooks/modele/*.pkl
+notebooks/modele/catboost_info/
+
+# les extensions de fichiers lourds à .gitignore
+echo "*.pkl" >> .gitignore
+echo "*.h5" >> .gitignore
+echo "*.model" >> .gitignore
+echo "*.joblib" >> .gitignore
+
+# ignorer spécifiquement le fichier
+echo "notebooks/modele_pkl" >> .gitignore
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -213,4 +228,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+<<<<<<< HEAD
 notebooks/EDA.ipynb
+=======
+notebooks/modele/rf_model_365.pkl
+notebooks/modele/rf_model_sans_filtre.pkl
+>>>>>>> origin/chaima
