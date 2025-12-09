@@ -136,30 +136,32 @@ class FeatureEngineering:
         # ---------------------------------------------------------
         df = df.sort_values(['counter_id', 'ds'])
         
-        # Lag 24h (Trafic d'hier à la même heure)
+        # Court terme (Récursif en production)
         df['lag_24h'] = df.groupby('counter_id')['count'].shift(24)
-        
-        # Lag 48h (Trafic d'avant-hier)
         df['lag_48h'] = df.groupby('counter_id')['count'].shift(48)
         
-        # Lag 1 semaine (Trafic semaine dernière)
-        df['lag_168h'] = df.groupby('counter_id')['count'].shift(168)
+        # Moyen terme (Stabilisateurs)
+        df['lag_168h'] = df.groupby('counter_id')['count'].shift(168) # 1 semaine
         
-        # Moyenne glissante sur les 4 derniers jours à la même heure
-        # (Sert à lisser les pics inhabituels)
+        # Long terme (Ancrage solide - NOUVEAU)
+        df['lag_336h'] = df.groupby('counter_id')['count'].shift(336) # 2 semaines
+        df['lag_504h'] = df.groupby('counter_id')['count'].shift(504) # 3 semaines
+        
+        # Moyenne glissante (Lissage)
         grouped = df.groupby('counter_id')['count']
         df['mean_last_4_days'] = grouped.shift(24).rolling(window=4).mean()
 
         # ---------------------------------------------------------
         # ÉTAPE 5 : NETTOYAGE FINAL
         # ---------------------------------------------------------
-        # Encodage ID pour XGBoost (Transforme les strings en nombres)
         df['counter_id_encoded'] = df['counter_id'].astype('category').cat.codes
         
-        # Suppression des NaN générés par les lags (les 7 premiers jours de l'historique sont vides)
+        # Attention : On perd maintenant les 21 premiers jours d'historique (à cause du dropna)
+        # C'est le prix à payer pour avoir des lags profonds !
         df = df.dropna()
         
         return df
+
 
 # --- Bloc de test ---
 if __name__ == "__main__":

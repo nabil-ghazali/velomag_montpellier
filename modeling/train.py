@@ -23,8 +23,15 @@ def train_model():
         'month_sin', 'month_cos', 'dow_sin', 'dow_cos',
         'is_weekend', 'is_holiday',
         'temperature_2m', 'wind_speed_10m', 'precipitation',
-        'lag_24h', 'lag_48h', 'lag_168h', 'mean_last_4_days'
+        
+        # Les Lags (Mémoire)
+        'lag_24h', 'lag_48h', 
+        'lag_168h',       # J-7
+        'lag_336h',       # J-14 (Nouveau)
+        'lag_504h',       # J-21 (Nouveau)
+        'mean_last_4_days'
     ]
+    
     target_col = 'count'
 
     # Vérification colonnes
