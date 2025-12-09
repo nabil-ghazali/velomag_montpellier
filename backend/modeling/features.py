@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import holidays
 from dotenv import load_dotenv
-from database.schemas import Database
+from data.schemas import Database
 
 load_dotenv()
 

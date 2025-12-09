@@ -31,9 +31,9 @@ fetch = FetchAPI(OPEN_API_URL) #le url sera passé en argument de la classe
 clean = DataCleaning() #le dataframe sera passé en argument des fonctions
 
 @app.command()
-def delete_tables():
+def delete_tables(table_name = None):
     """Supprime les tables existantes dans la base de données."""
-    db.drop_tables()
+    db.drop_tables(table_name)
     print("Tables supprimées avec succès.")
 
 @app.command()

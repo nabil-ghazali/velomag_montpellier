@@ -166,7 +166,3 @@ class Predictor:
             print(f"✅ Succès ! {len(df_export)} lignes insérées pour le {target_date.date()}.")
         except Exception as e:
             print(f"❌ Erreur lors de l'insertion : {e}")
-
-if __name__ == "__main__":
-    p = Predictor()
-    p.run_prediction()
