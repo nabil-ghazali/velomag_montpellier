@@ -35,23 +35,14 @@ class DataCleaning:
         return df
 
     def _standardize_to_UTC(self, df):
-        """
-        Traite les dates Météo : De l'heure locale (Paris) vers UTC Naive.
-        """
-
-        df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
-        
-        # 1. On localise en Paris (Gère l'heure d'été/hiver)
-        df['datetime'] = df['datetime'].dt.tz_localize(
-            'Europe/Paris', 
-            ambiguous='NaT', 
-            nonexistent='NaT'
-        )
-        # 2. On convertit en UTC
-        df['datetime'] = df['datetime'].dt.tz_convert('UTC')
-        # 3. On retire la timezone
-        df['datetime'] = df['datetime'].dt.tz_localize(None)
-        print(df.head())
-        return df
-
-        
+            """
+            Traite les dates Météo : On s'assure juste que c'est au format date.
+            Comme l'API envoie déjà du UTC, on a rien d'autre à faire !
+            """
+            df['datetime'] = pd.to_datetime(df['datetime'], errors='coerce')
+            
+            # On retire le fuseau horaire si Pandas l'a ajouté automatiquement (pour avoir du "naive")
+            if df['datetime'].dt.tz is not None:
+                df['datetime'] = df['datetime'].dt.tz_localize(None)
+                
+            return df

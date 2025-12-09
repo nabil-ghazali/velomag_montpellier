@@ -93,50 +93,43 @@ class FetchAPI:
             "vehicleType": vehicleType
         }
     
+
     def fetch_meteo(self, start_date, end_date, latitude:str, longitude:str) -> pd.DataFrame:
         
         if end_date is None:
             end_date = datetime.now().strftime("%Y-%m-%d")
 
-        """
-        Charge les données météo historiques depuis Open-Meteo ERA5.
-        Retourne un DataFrame Pandas nettoyé.
-        """
-        print(f" Chargement de la météo pour {latitude}, {longitude}...")
+        print(f" Chargement de la météo HORAIRE pour {latitude}, {longitude}...")
         
         url_meteo = (
             f"https://archive-api.open-meteo.com/v1/era5?"
             f"latitude={latitude}&longitude={longitude}"
             f"&start_date={start_date}&end_date={end_date}"
-            f"&daily=temperature_2m_max,temperature_2m_min,shortwave_radiation_sum"
-            f"&timezone=Europe/Paris"
+            f"&hourly=temperature_2m,wind_speed_10m,precipitation"
+            # Plus de timezone, on reste en UTC
         )
 
         try:
-            response = requests.get(url_meteo, timeout=10) # Toujours mettre un timeout !
-            response.raise_for_status() # Lève une erreur si code != 200
+            # MODIFICATION ICI : Timeout passé à 30 secondes
+            response = requests.get(url_meteo, timeout=50) 
+            response.raise_for_status()
 
             data = response.json()
             
-            if "daily" not in data:
-                print(" Erreur : clé 'daily' manquante dans le JSON")
-                return None
+            if "hourly" not in data:
+                print(" Erreur : clé 'hourly' manquante dans le JSON")
+                return pd.DataFrame() # Retourne un DF vide au lieu de None
 
-            # Conversion en DataFrame
-            self.meteo_df = pd.DataFrame(data["daily"])
-            
-            # Nettoyage des types
-            self.meteo_df['time'] = pd.to_datetime(self.meteo_df['time'])
-            
-            # Renommage pour cohérence (optionnel mais conseillé)
+            self.meteo_df = pd.DataFrame(data["hourly"])
             self.meteo_df = self.meteo_df.rename(columns={'time': 'datetime'})
+            self.meteo_df['datetime'] = pd.to_datetime(self.meteo_df['datetime'])
 
-            print(f" Météo chargée : {len(self.meteo_df)} jours récupérés.")
+            print(f" Météo chargée : {len(self.meteo_df)} heures récupérées.")
             return self.meteo_df
 
         except requests.exceptions.RequestException as e:
             print(f" Erreur de connexion API Météo : {e}")
-            return None
+            return pd.DataFrame() # Retourne un DF vide pour ne pas faire planter la suite
 
     def fetch_all_data_velo(self, start_date="2024-11-30T00:00:00", end_date = None) -> pd.DataFrame:
         if end_date is None:

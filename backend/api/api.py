@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import pandas as pd
 from dotenv import load_dotenv
-from data.schemas import Database
+from backend.data.schemas import Database
 
 # 1. Configuration
 load_dotenv()

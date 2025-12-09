@@ -3,7 +3,7 @@ import xgboost as xgb
 import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
-from modeling.features import FeatureEngineering
+from backend.modeling.features import FeatureEngineering
 
 def train_model():
     print(" Démarrage de l'entraînement (Split Temporel)...")
@@ -30,7 +30,7 @@ def train_model():
     # Vérification colonnes
     missing = [c for c in features_cols if c not in df.columns]
     if missing:
-        print(f"❌ Erreur : Colonnes manquantes : {missing}")
+        print(f" Erreur : Colonnes manquantes : {missing}")
         return
 
     X = df[features_cols]
@@ -44,7 +44,7 @@ def train_model():
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, 
         test_size=0.2, 
-        shuffle=False, # <--- C'EST ICI QUE TOUT CHANGE
+        shuffle=False, # afin de garder la temporalité
         random_state=42
     )
 
@@ -80,7 +80,7 @@ def train_model():
     print(f"   - R2 Score : {r2:.4f}")
 
     # --- 6. Sauvegarde Modèle ---
-    joblib.dump(model, 'modeling/model_velo.pkl')
+    joblib.dump(model, 'backend/model/model_velo.pkl')
     print(" Modèle sauvegardé.")
 
     # --- 7. Sauvegarde BDD ---

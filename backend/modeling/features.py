@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import holidays
 from dotenv import load_dotenv
-from data.schemas import Database
+from backend.data.schemas import Database
 
 load_dotenv()
 
@@ -19,35 +19,48 @@ class FeatureEngineering:
         self.database_url = f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}?sslmode=require"
         self.db = Database(self.database_url)
 
-    def create_dataset(self) -> pd.DataFrame:
-        """
-        Orchestre tout le processus :
-        1. Récupération (DB)
-        2. Fusion (Merge)
-        3. Feature Engineering avancé (Pipeline)
-        """
+    def create_dataset(self):
         print("1️⃣  Chargement des données depuis la DB...")
         df_velo = self.db.pull_data("velo_clean")
-        df_meteo = self.db.pull_data("meteo_clean")
+        df_meteo = self.db.pull_data("meteo_clean") # ou meteo_raw selon votre schéma
+        
+        # --- DEBUG : AFFICHER LA TAILLE ---
+        print(f"   -> Vélos trouvés : {len(df_velo)} lignes")
+        print(f"   -> Météo trouvée : {len(df_meteo)} lignes")
 
-        # Conversion et Nettoyage des Timezones
-        df_velo['datetime'] = pd.to_datetime(df_velo['datetime'], utc=True).dt.tz_localize(None)
-        df_meteo['datetime'] = pd.to_datetime(df_meteo['datetime'], utc=True).dt.tz_localize(None)
+        if df_velo.empty or df_meteo.empty:
+            print("❌ ARRÊT D'URGENCE : Une des tables est vide !")
+            return pd.DataFrame()
 
-        # Fusion (Merge)
         print("2️⃣  Fusion des données Vélos & Météo...")
-        df_merged = pd.merge(
-            df_velo,
-            df_meteo,
-            on='datetime',
-            how='left'
-        )
+        
+        # Assurez-vous que les colonnes de date s'appellent pareil et sont au bon format
+        # Souvent le problème vient de là : 'datetime' vs 'date' ou Timezone
+        if 'datetime' in df_velo.columns: df_velo['datetime'] = pd.to_datetime(df_velo['datetime'])
+        if 'datetime' in df_meteo.columns: df_meteo['datetime'] = pd.to_datetime(df_meteo['datetime'])
+        
+        # Si meteo a une timezone (UTC) et velo n'en a pas, le merge échoue souvent
+        # On normalise tout en "tz-naive" (sans fuseau)
+        if df_velo['datetime'].dt.tz is not None:
+            df_velo['datetime'] = df_velo['datetime'].dt.tz_localize(None)
+        if df_meteo['datetime'].dt.tz is not None:
+            df_meteo['datetime'] = df_meteo['datetime'].dt.tz_localize(None)
 
-        # On lance la pipeline de transformation
+        df_merged = pd.merge(df_velo, df_meteo, on='datetime', how='inner')
+        
+        # --- DEBUG : AFFICHER LE RÉSULTAT DU MERGE ---
+        print(f"   -> Résultat de la fusion : {len(df_merged)} lignes")
+        
+        if df_merged.empty:
+            print("❌ PROBLÈME DE MERGE : Aucune date ne correspond entre Vélo et Météo.")
+            print("   Exemple date Vélo :", df_velo['datetime'].iloc[0] if not df_velo.empty else "Vide")
+            print("   Exemple date Météo:", df_meteo['datetime'].iloc[0] if not df_meteo.empty else "Vide")
+            # On retourne vide pour éviter le crash plus loin
+            return pd.DataFrame()
+
         print("3️⃣  Feature Engineering (Création des Lags & Cycles)...")
         df_final = self._pipeline_feature_engineering_finale(df_merged)
-
-        print(f" Dataset final prêt : {df_final.shape[0]} lignes, {df_final.shape[1]} colonnes.")
+        
         return df_final
 
     def _pipeline_feature_engineering_finale(self, df_input):
