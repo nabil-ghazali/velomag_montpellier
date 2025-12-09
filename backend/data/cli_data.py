@@ -75,13 +75,3 @@ def push_db():
     db.push_data(data_meteo, "meteo_raw")
     db.push_data(df_clean_meteo, "meteo_clean")
     print("Données récupérées et chargées avec succès.")
-
-
-@app.command()
-def pull_db():
-    """Charge les données nettoyées dans la base de données."""
-    print("Fonction de chargement des données dans la base de données.")
-    df_velo_clean = db.pull_data("velo_clean")
-    df_meteo_clean = db.pull_data("meteo_clean")
-    print(f"Données Vélo nettoyées : {len(df_velo_clean)} enregistrements.")
-    print(f"Données Météo nettoyées : {len(df_meteo_clean)} enregistrements.")
