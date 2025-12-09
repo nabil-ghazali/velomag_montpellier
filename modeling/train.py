@@ -37,7 +37,7 @@ def train_model():
     # Vérification colonnes
     missing = [c for c in features_cols if c not in df.columns]
     if missing:
-        print(f"❌ Erreur : Colonnes manquantes : {missing}")
+        print(f" Erreur : Colonnes manquantes : {missing}")
         return
 
     X = df[features_cols]
@@ -106,7 +106,7 @@ def train_model():
     #     fe.db.push_data(df_export, "model_data")
     #     print(f" {len(df_export)} prédictions enregistrées (Période : {first_test_date} -> Fin)")
     # except Exception as e:
-    #     print(f"❌ Erreur BDD : {e}")
+    #     print(f" Erreur BDD : {e}")
 
 if __name__ == "__main__":
     train_model()
