@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import select
 
-from database.schemas import Database  # car tu es dans backend/ et tu fais "python -m api.main"
+from backend.data.schemas import Database  # car tu es dans backend/ et tu fais "python -m api.main"
 
 # Charger les variables d'environnement (.env)
 load_dotenv()
@@ -58,5 +58,26 @@ def get_counters():
 
 # --- Route pour récupérer le trafic d'un compteur sur une période ---
 @app.get("/predict")
-def get_predict(
+def get_predict():
+    """
+    Retourne les prédictions de trafic pour un compteur donné sur une période spécifiée.
+    """
+    with db.engine.connect() as conn:
+        result = conn.execute(
+            select(
+                db.model_data.c.datetime,
+                db.model_data.c.counter_id,
+                db.model_data.c.predicted_values,
+            )
+        )
+        predictions = [
+            {
+                "datetime": row.datetime,
+                "counter_id": row.counter_id,
+                "predicted_values": row.predicted_values,
+            }
+            for row in result
+        ]
+
+    return {"predictions": predictions}
     

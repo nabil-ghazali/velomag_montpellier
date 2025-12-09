@@ -1,0 +1,26 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "aws-1-eu-central-1.pooler.supabase.com",
+            "port": 6543,
+            "driver": "PostgreSQL",
+            "name": "postgres",
+            "database": "postgres",
+            "username": "postgres.jbfxlydkvanrfewfexgf",
+            "password": "Simplon2025"
+        },
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "db_local",
+            "database": "velomag_v2",
+            "username": "nabil_local",
+            "password": "admin"
+        }
+    ]
+}

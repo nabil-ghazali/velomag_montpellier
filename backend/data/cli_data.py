@@ -1,4 +1,4 @@
-from database.schemas import Database
+from data.schemas import Database
 from data.fetch_data import FetchAPI
 from data.clean_data import DataCleaning
 import os
