@@ -93,6 +93,7 @@ class FetchAPI:
             "vehicleType": vehicleType
         }
     
+
     def fetch_meteo(self, start_date, end_date, latitude:str, longitude:str) -> pd.DataFrame:
         
         if end_date is None:
@@ -100,32 +101,27 @@ class FetchAPI:
 
         print(f" Chargement de la météo HORAIRE pour {latitude}, {longitude}...")
         
-        # URL modifiée pour récupérer l'heure par heure (hourly)
         url_meteo = (
             f"https://archive-api.open-meteo.com/v1/era5?"
             f"latitude={latitude}&longitude={longitude}"
             f"&start_date={start_date}&end_date={end_date}"
-            f"&hourly=temperature_2m,wind_speed_10m,precipitation" # <-- CHANGEMENT ICI
+            f"&hourly=temperature_2m,wind_speed_10m,precipitation"
+            # Plus de timezone, on reste en UTC
         )
 
         try:
-            response = requests.get(url_meteo, timeout=10)
+            # MODIFICATION ICI : Timeout passé à 30 secondes
+            response = requests.get(url_meteo, timeout=50) 
             response.raise_for_status()
 
             data = response.json()
             
-            # CHANGEMENT ICI : On cherche la clé 'hourly' et plus 'daily'
             if "hourly" not in data:
                 print(" Erreur : clé 'hourly' manquante dans le JSON")
-                return None
+                return pd.DataFrame() # Retourne un DF vide au lieu de None
 
-            # Création du DataFrame
             self.meteo_df = pd.DataFrame(data["hourly"])
-            
-            # La colonne s'appelle souvent 'time' dans l'API, on la renomme 'datetime'
             self.meteo_df = self.meteo_df.rename(columns={'time': 'datetime'})
-            
-            # Conversion en format date
             self.meteo_df['datetime'] = pd.to_datetime(self.meteo_df['datetime'])
 
             print(f" Météo chargée : {len(self.meteo_df)} heures récupérées.")
@@ -133,8 +129,7 @@ class FetchAPI:
 
         except requests.exceptions.RequestException as e:
             print(f" Erreur de connexion API Météo : {e}")
-            return None
-        
+            return pd.DataFrame() # Retourne un DF vide pour ne pas faire planter la suite
 
     def fetch_all_data_velo(self, start_date="2024-11-30T00:00:00", end_date = None) -> pd.DataFrame:
         if end_date is None:

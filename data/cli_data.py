@@ -30,11 +30,32 @@ db = Database(DATABASE_URL)
 fetch = FetchAPI(OPEN_API_URL) #le url sera passé en argument de la classe
 clean = DataCleaning() #le dataframe sera passé en argument des fonctions
 
+
 @app.command()
 def delete_tables():
-    """Supprime les tables existantes dans la base de données."""
+    """Supprime TOUTES les tables de la base de données (Danger !)."""
+    print("⚠Attention : Vous êtes sur le point de supprimer TOUTES les tables.")
+    # On appelle drop_tables sans argument -> Tout supprimer
     db.drop_tables()
-    print("Tables supprimées avec succès.")
+    print(" Toutes les tables ont été supprimées.")
+
+@app.command()
+def delete_tables_by_name(table_name: str = ""):
+    """Supprime une seule table spécifique."""
+    
+    # Si l'utilisateur a oublié de mettre le nom
+    if not table_name:
+        print(" Erreur : Vous devez fournir un nom de table.")
+        print(" Si vous souhaitez supprimer toutes les tables, veuillez utiliser la fonction 'delete-tables' (sans argument).")
+        return
+
+    # Si le nom est fourni, on supprime juste cette table
+    print(f" Suppression de la table : {table_name}...")
+    try:
+        db.drop_tables(table_name)
+        print(f" Table '{table_name}' supprimée avec succès.")
+    except Exception as e:
+        print(f" Erreur lors de la suppression : {e}")
 
 @app.command()
 def create_tables():

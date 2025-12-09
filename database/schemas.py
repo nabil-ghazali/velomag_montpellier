@@ -109,8 +109,10 @@ class Database:
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("datetime", DateTime, nullable=False),
+            Column("counter_id", String, nullable=True),  # <-- AJOUT ICI
             Column("predicted_values", Float, nullable=False),
         )
+
 
         self.metadata.create_all(self.engine)
 
