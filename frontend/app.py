@@ -140,7 +140,7 @@ with tab1:
             st.plotly_chart(fig_area, use_container_width=True)
 
     else:
-        st.warning(" Aucune donnée de carte disponible. Vérifiez le script 'predict.py'.")
+        st.warning(" Aucune donnée de carte disponible. Vérifiez le script 'predict_next_day.py'.")
 
 # ==========================================
 # ONGLET 2 : LE DÉTAIL (VUE COMPTEUR)

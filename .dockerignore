@@ -1,0 +1,42 @@
+# --- Sécurité (Ne jamais copier les secrets) ---
+.env
+.env.*
+*.env
+
+# --- Python (Ne pas copier le venv local ni les caches) ---
+.venv
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+.pytest_cache/
+.coverage
+
+# --- Git & GitHub ---
+.git
+.gitignore
+.github/
+
+# --- IDE & Système ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Fichiers Docker (Pas besoin de les copier DANS l'image) ---
+docker-compose.yml
+Dockerfile
+backend/Dockerfile
+frontend/Dockerfile
+deploy.yml
+
+# --- Data lourde (Optionnel : à adapter) ---
+# On ignore les CSV locaux s'ils ne servent qu'à l'entraînement local
+# Mais on GARDE les modèles .pkl ou .json !
+*.csv
+*.xlsx
+# data/  <-- Décommentez si vous avez un dossier data lourd à ignorer

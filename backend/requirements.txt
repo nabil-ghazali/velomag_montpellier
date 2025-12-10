@@ -11,3 +11,5 @@ uvicorn
 uvicorn[standard]
 requests
 prophet  
+holidays
+xgboost
