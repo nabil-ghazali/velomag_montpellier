@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # --- SERVICE BACKEND (API) ---
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: velomag_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env  # Docker va lire vos infos de connexion (host distant) ici
+    volumes:
+      # Permet de modifier le code sans redémarrer (Hot Reload)
+      - ./backend:/app/backend
+      # Si vous avez besoin de fichiers à la racine (ex: model/), ajoutez-les :
+      # - ./model:/app/backend/model 
+
+  # --- SERVICE FRONTEND (Streamlit) ---
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: velomag_frontend
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      # L'URL interne de docker pour que le frontend parle au backend
+      - API_URL=http://backend:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app/frontend
+

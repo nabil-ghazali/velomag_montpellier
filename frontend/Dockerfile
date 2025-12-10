@@ -1,17 +1,16 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install system dependencies for psycopg2
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
- && rm -rf /var/lib/apt/lists/*
+# --- CORRECTION ICI ---
+# On copie le fichier spécifiquement depuis le dossier frontend
+COPY frontend/requirements.txt .
 
-COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# On copie le code du frontend
+COPY frontend/ ./frontend/
 
-# Par défaut, on ne fait rien (la commande est surchargée par docker-compose)
-CMD ["sleep", "infinity"]
+EXPOSE 8501
+
+CMD ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]

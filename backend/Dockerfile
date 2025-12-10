@@ -1,17 +1,23 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install system dependencies for psycopg2
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
- && rm -rf /var/lib/apt/lists/*
+# --- CORRECTION ICI ---
+# On copie le fichier spécifiquement depuis le dossier backend
+COPY backend/requirements.txt .
 
-COPY requirements.txt .
+# Installation des dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# On copie le code du backend
+COPY backend/ ./backend/
+# (Optionnel) Si vous avez des dossiers partagés à la racine (ex: database), copiez-les ici :
+# COPY database/ ./database/
 
-# Par défaut, on ne fait rien (la commande est surchargée par docker-compose)
-CMD ["sleep", "infinity"]
+EXPOSE 8000
+
+# Lancement
+CMD ["uvicorn", "backend.api.api:app", "--host", "0.0.0.0", "--port", "8000"]
