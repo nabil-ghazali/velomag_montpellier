@@ -1,0 +1,51 @@
+name: Daily Data & Prediction Update
+
+on:
+  # 1. Déclenchement automatique (Cron)
+  schedule:
+    # À 5h00 UTC chaque jour (soit 6h00 en France l'hiver)
+    - cron: '0 5 * * *'
+  
+  # 2. Déclenchement manuel (Bouton "Run workflow") pour tester
+  workflow_dispatch:
+
+jobs:
+  run-scripts:
+    runs-on: ubuntu-latest
+
+    # Injection des secrets BDD pour que les scripts puissent écrire
+    env:
+      host: ${{ secrets.DB_HOST }}
+      dbname: ${{ secrets.DB_NAME }}
+      user: ${{ secrets.DB_USER }}
+      password: ${{ secrets.DB_PASSWORD }}
+      port: ${{ secrets.DB_PORT }}
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Configuration Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          # On installe les librairies du backend (pandas, sqlalchemy, xgboost...)
+          pip install -r backend/requirements.txt
+
+      # --- TÂCHE 1 : Récupération des Données (ETL) ---
+      - name: Récupération Données API & Météo
+        run: |
+          # Adaptez cette commande selon comment vous lancez votre script de données !
+          # Exemple si c'est un module :
+          python -m backend.data.cli_data push-db
+          # Ou si c'est un fichier simple : python backend/data/load_data.py
+
+      # --- TÂCHE 2 : Calcul des Prédictions ---
+      - name: Génération des Prédictions (J+1)
+        run: |
+          # Lance le script que nous avons corrigé ensemble
+          python -m backend.modeling.predict_next_day
