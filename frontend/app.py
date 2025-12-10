@@ -6,10 +6,12 @@ from streamlit_folium import st_folium
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import date
+import os
+
 
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="VéloMag Montpellier", page_icon="🚲", layout="wide")
-API_URL = "http://127.0.0.1:8000"
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.title("🚲 Tableau de Bord - VéloMag")
 
