@@ -1,37 +1,68 @@
-version: '3.8'
-
 services:
-  # --- SERVICE BACKEND (API) ---
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: velomag_backend
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    env_file:
-      - .env  # Docker va lire vos infos de connexion (host distant) ici
     volumes:
-      # Permet de modifier le code sans redémarrer (Hot Reload)
-      - ./backend:/app/backend
-      # Si vous avez besoin de fichiers à la racine (ex: model/), ajoutez-les :
-      # - ./model:/app/backend/model 
+      - ./backend:/app
+    command: uvicorn backend.api.api:app --host 0.0.0.0 --port 8000
 
-  # --- SERVICE FRONTEND (Streamlit) ---
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: velomag_frontend
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
     ports:
-      - "8501:8501"
-    env_file:
-      - .env
-    environment:
-      # L'URL interne de docker pour que le frontend parle au backend
-      - API_URL=http://backend:8000
-    depends_on:
-      - backend
+      - "9090:9090"
     volumes:
-      - ./frontend:/app/frontend
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
 
+
+# services:
+#   backend:
+#     build:
+#       context: ./backend      # <--- Chemin vers le dossier backend
+#       dockerfile: Dockerfile  # <--- Dockerfile situé dans backend/
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ./backend:/app
+
+#   prometheus:
+#     image: prom/prometheus
+#     container_name: prometheus
+#     ports:
+#       - "9090:9090"
+#     volumes:
+#       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+
+
+# version: "3.8"
+
+# services:
+#   backend:
+#     build: ./backend
+#     container_name: velomag-backend
+#     ports:
+#       - "8000:8000"  # endpoint API + metrics
+#     env_file:
+#       - .env
+
+#   prometheus:
+#     image: prom/prometheus
+#     container_name: prometheus
+#     volumes:
+#       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+#     ports:
+#       - "9090:9090"
+
+#   grafana:
+#     image: grafana/grafana
+#     container_name: grafana
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       - GF_SECURITY_ADMIN_PASSWORD=admin
+#     depends_on:
+#       - prometheus

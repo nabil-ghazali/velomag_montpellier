@@ -11,3 +11,4 @@ uvicorn
 uvicorn[standard]
 requests
 prophet  
+prometheus_client

@@ -3,7 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import pandas as pd
 from dotenv import load_dotenv
-from backend.data.schemas import Database
+#from data.schemas import Database
+from .metrics import add_metrics_route
+from ..data.schemas import Database
+
+
 
 # 1. Configuration
 load_dotenv()
@@ -17,6 +21,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Ajouter l'endpoint Prometheus à ton app existante
+add_metrics_route(app)
+
 
 # 2. Connexion Base de Données
 try:
