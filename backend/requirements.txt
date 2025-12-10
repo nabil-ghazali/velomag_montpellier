@@ -11,3 +11,5 @@ uvicorn
 uvicorn[standard]
 requests
 prophet  
+st_folium
+streamlit_folium
