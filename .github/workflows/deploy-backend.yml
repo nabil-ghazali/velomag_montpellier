@@ -1,0 +1,21 @@
+name: Deploy Backend to Azure
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy Docker container to Azure App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: "velomag-frontend"                 # NOM de ton App Service pour le backend
+          publish-profile: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+          images: "DOCKERFILE=backend/Dockerfile"
