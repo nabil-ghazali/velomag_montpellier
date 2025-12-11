@@ -1,13 +1,17 @@
+version: "3.9"
+
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: ./backend       # chemin vers le dossier backend
+      dockerfile: Dockerfile   # Dockerfile situé dans backend/
+    env_file:                   # <-- correctement placé ici, au niveau du service
+      - .env
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
-    command: uvicorn backend.api.api:app --host 0.0.0.0 --port 8000
+    command: uvicorn api.api:app --host 0.0.0.0 --port 8000
 
   prometheus:
     image: prom/prometheus
@@ -16,6 +20,27 @@ services:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+
+# services:
+#   backend:
+#     build:
+#       context: .          # <-- change ici
+#       dockerfile: backend/Dockerfile
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ./backend:/app/backend
+#     command: uvicorn backend.api.api:app --host 0.0.0.0 --port 8000
+
+
+#   prometheus:
+#     image: prom/prometheus
+#     container_name: prometheus
+#     ports:
+#       - "9090:9090"
+#     volumes:
+#       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
 
 
 # services:

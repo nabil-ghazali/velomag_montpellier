@@ -4,6 +4,7 @@ numpy
 sqlalchemy
 psycopg2-binary
 scikit-learn
+xgboost
 joblib
 streamlit
 python-dotenv

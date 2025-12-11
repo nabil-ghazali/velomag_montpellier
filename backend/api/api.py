@@ -3,9 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import pandas as pd
 from dotenv import load_dotenv
-#from data.schemas import Database
+from data.schemas import Database
 from .metrics import add_metrics_route
-from ..data.schemas import Database
+#from ..data.schemas import Database
+
 
 
 

@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import holidays
 from dotenv import load_dotenv
-from backend.data.schemas import Database
+#from backend.data.schemas import Database
+from data.schemas import Database
 
 load_dotenv()
 
@@ -13,7 +14,8 @@ class FeatureEngineering:
         self.user = os.getenv("user")
         self.password = os.getenv("password")
         self.host = os.getenv("host")
-        self.port = os.getenv("port")
+        # Correction : port doit être converti en int
+        self.port = int(os.getenv("port", 5432)) 
         self.dbname = os.getenv("dbname")
         
         self.database_url = f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}?sslmode=require"

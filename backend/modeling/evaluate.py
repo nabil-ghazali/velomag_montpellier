@@ -2,10 +2,11 @@
 import joblib
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, r2_score
-from backend.modeling.features import FeatureEngineering
+from modeling.features import FeatureEngineering
 
 # Charger le modèle **une seule fois** pour éviter de le recharger chaque minute
-MODEL_PATH = "backend/model/model_velo.pkl"
+#MODEL_PATH = "backend/model/model_velo.pkl"
+MODEL_PATH = "model/model_velo.pkl"
 
 try:
     model = joblib.load(MODEL_PATH)
