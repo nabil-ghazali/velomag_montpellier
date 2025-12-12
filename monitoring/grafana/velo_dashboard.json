@@ -1,0 +1,63 @@
+{
+"dashboard": {
+    "id": null,
+    "uid": "velo-dashboard",
+    "title": "Velo Metrics Dashboard",
+    "timezone": "browser",
+    "panels": [
+    {
+        "type": "graph",
+        "title": "Velo MAE",
+        "targets": [
+        {
+            "expr": "velo_mae",
+            "legendFormat": "MAE",
+            "refId": "A"
+        }
+        ],
+        "xaxis": { "mode": "time" },
+        "yaxis": { "format": "short" }
+    },
+    {
+        "type": "graph",
+        "title": "Velo R2",
+        "targets": [
+        {
+            "expr": "velo_r2",
+            "legendFormat": "R2",
+            "refId": "A"
+        }
+        ],
+        "xaxis": { "mode": "time" },
+        "yaxis": { "format": "short" }
+    },
+    {
+        "type": "graph",
+        "title": "CPU Usage",
+        "targets": [
+        {
+            "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)",
+            "legendFormat": "{{instance}}",
+            "refId": "A"
+        }
+        ],
+        "xaxis": { "mode": "time" },
+        "yaxis": { "format": "percent" }
+    },
+    {
+        "type": "graph",
+        "title": "Memory Usage",
+        "targets": [
+        {
+            "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100",
+            "legendFormat": "{{instance}}",
+            "refId": "A"
+        }
+        ],
+        "xaxis": { "mode": "time" },
+        "yaxis": { "format": "percent" }
+    }
+    ]
+},
+"overwrite": true
+}
