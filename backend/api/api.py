@@ -5,7 +5,6 @@ import pandas as pd
 from dotenv import load_dotenv
 from backend.data.schemas import Database
 from functools import lru_cache
-from .metrics import router as metrics_router
 
 # 1. Configuration
 load_dotenv()
@@ -19,8 +18,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.include_router(metrics_router) # <--- Intégration des routes metrics dans l'app
 
 # --- GESTION DE LA BDD (Lazy Loading) ---
 @lru_cache()
