@@ -352,7 +352,7 @@ def get_map_data():
         query_pred = """
                     SELECT counter_id, datetime, predicted_values as pred_count
                     FROM model_data
-                    WHERE datetime >= CURRENT_DATE - INTERVAL '30 day' 
+                    WHERE datetime >= CURRENT_DATE - INTERVAL '21 day' 
                     AND datetime < CURRENT_DATE + INTERVAL '2 day'
                 """
 
