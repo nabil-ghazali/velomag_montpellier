@@ -145,28 +145,29 @@ def get_history(counter_id: str):
 
 @app.get("/prediction/{counter_id}")
 def get_prediction(counter_id: str):
-    """Retourne les prédictions futures (Sécurisé & Optimisé)."""
+    """
+    Retourne les prédictions.
+    CORRECTIF : On regarde 30 jours en arrière pour combler les trous
+    si l'historique réel s'est arrêté il y a longtemps (ex: le 2 déc).
+    """
     db = get_db()
-    if not db: raise HTTPException(500, "Database non connectée")
-
+    if not db: raise HTTPException(500, "Database unavailable")
     try:
-        # OPTIMISATION : On ne prend que le futur (>= CURRENT_DATE)
+        # AVANT : AND datetime >= CURRENT_DATE (Stricte futur -> Créait le trou du 2 au 14 déc)
+        # APRES : AND datetime >= CURRENT_DATE - INTERVAL '30 day'
         query = """
             SELECT datetime, predicted_values 
             FROM model_data 
             WHERE counter_id = %(id)s
-            AND datetime >= CURRENT_DATE
+            AND datetime >= CURRENT_DATE - INTERVAL '30 day'
             ORDER BY datetime ASC
         """
-        
         with db.engine.connect() as conn:
             df = pd.read_sql(query, conn, params={"id": counter_id})
             
         df = df.rename(columns={'predicted_values': 'count'})
         df['datetime'] = df['datetime'].astype(str)
-        
         return df.to_dict(orient="records")
-        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -325,36 +326,22 @@ def get_prediction(counter_id: str):
 
 @app.get("/map-data")
 def get_map_data():
-    """
-    Route Carte : Assure une continuité parfaite Historique -> Prédiction.
-    On récupère large en SQL pour être sûr d'avoir une prédiction en face de chaque trou potentiel.
-    """
-    db = get_db()
-    if not db: raise HTTPException(500, "Database non connectée")
-
+    # ... début de la fonction ...
     try:
-        # 1. DÉFINITION DE LA FENÊTRE LARGE
-        # On regarde 3 jours en arrière pour être sûr de combler les trous récents
-        # et 2 jours en avant pour le futur.
-        
-        # --- REQUÊTE A : DONNÉES RÉELLES ---
+        # On élargit la fenêtre à 30 jours en arrière pour attraper le 2 décembre
         query_real = """
             SELECT counter_id, datetime, intensity as real_count
             FROM velo_clean
-            WHERE datetime >= CURRENT_DATE - INTERVAL '3 day'
+            WHERE datetime >= CURRENT_DATE - INTERVAL '30 day'
         """
         
-        # --- REQUÊTE B : PRÉDICTIONS (CORRECTION ICI) ---
-        # AVANT : datetime >= CURRENT_DATE (Trop strict, créait des trous)
-        # APRÈS : datetime >= CURRENT_DATE - INTERVAL '3 day'
-        # On récupère les prédictions sur la MÊME période que le réel.
         query_pred = """
             SELECT counter_id, datetime, predicted_values as pred_count
             FROM model_data
-            WHERE datetime >= CURRENT_DATE - INTERVAL '3 day' 
+            WHERE datetime >= CURRENT_DATE - INTERVAL '30 day' 
             AND datetime < CURRENT_DATE + INTERVAL '2 day'
         """
-
+        # ... le reste reste identique ...
         query_loc = "SELECT DISTINCT ON (counter_id) counter_id, lat, lon FROM velo_clean"
 
         with db.engine.connect() as conn:
