@@ -159,7 +159,7 @@ def get_prediction(counter_id: str):
             SELECT datetime, predicted_values 
             FROM model_data 
             WHERE counter_id = %(id)s
-            AND datetime >= CURRENT_DATE - INTERVAL '30 day'
+            AND datetime >= CURRENT_DATE - INTERVAL '21 day'
             ORDER BY datetime ASC
         """
         with db.engine.connect() as conn:
