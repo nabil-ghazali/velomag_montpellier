@@ -326,26 +326,32 @@ def get_prediction(counter_id: str):
 @app.get("/map-data")
 def get_map_data():
     """
-    Route Carte : Fusionne Réel et Prédictif.
-    Priorité aux données réelles, comble les trous avec les prédictions.
+    Route Carte : Assure une continuité parfaite Historique -> Prédiction.
+    On récupère large en SQL pour être sûr d'avoir une prédiction en face de chaque trou potentiel.
     """
     db = get_db()
     if not db: raise HTTPException(500, "Database non connectée")
 
     try:
-        # 1. On récupère le contexte (Hier, Aujourd'hui, Demain, Après-demain)
-        # CURRENT_DATE - 1 jour -> CURRENT_DATE + 2 jours
+        # 1. DÉFINITION DE LA FENÊTRE LARGE
+        # On regarde 3 jours en arrière pour être sûr de combler les trous récents
+        # et 2 jours en avant pour le futur.
         
+        # --- REQUÊTE A : DONNÉES RÉELLES ---
         query_real = """
             SELECT counter_id, datetime, intensity as real_count
             FROM velo_clean
-            WHERE datetime >= CURRENT_DATE - INTERVAL '1 day'
+            WHERE datetime >= CURRENT_DATE - INTERVAL '3 day'
         """
         
+        # --- REQUÊTE B : PRÉDICTIONS (CORRECTION ICI) ---
+        # AVANT : datetime >= CURRENT_DATE (Trop strict, créait des trous)
+        # APRÈS : datetime >= CURRENT_DATE - INTERVAL '3 day'
+        # On récupère les prédictions sur la MÊME période que le réel.
         query_pred = """
             SELECT counter_id, datetime, predicted_values as pred_count
             FROM model_data
-            WHERE datetime >= CURRENT_DATE - INTERVAL '1 day' 
+            WHERE datetime >= CURRENT_DATE - INTERVAL '3 day' 
             AND datetime < CURRENT_DATE + INTERVAL '2 day'
         """
 
@@ -356,34 +362,40 @@ def get_map_data():
             df_pred = pd.read_sql(query_pred, conn)
             df_locs = pd.read_sql(query_loc, conn)
 
-        # 2. Standardisation des dates pour la fusion
+        # 2. STANDARDISATION
         df_real['datetime'] = pd.to_datetime(df_real['datetime'])
         df_pred['datetime'] = pd.to_datetime(df_pred['datetime'])
 
-        # 3. Fusion (Outer Join) sur ID et Date
+        # 3. FUSION (OUTER JOIN)
+        # Cela crée une table avec toutes les dates possibles.
+        # Si une date existe dans Pred mais pas dans Real (le trou), une ligne est créée.
         df_merged = pd.merge(df_pred, df_real, on=['counter_id', 'datetime'], how='outer')
 
-        # 4. Stratégie de remplissage : Réel > Prédiction > 0
-        df_merged['final_count'] = df_merged['real_count'].fillna(df_merged['pred_count']).fillna(0)
+        # 4. LE "ZIPPAGE" (Comblement des trous)
+        # Logique : "Si j'ai une valeur réelle, je la prends. SINON, je prends la prédiction."
+        # C'est grâce à ça que tes lags servent : la prédiction est là pour boucher le trou.
+        df_merged['final_count'] = df_merged['real_count'].fillna(df_merged['pred_count'])
+        
+        # Sécurité finale : s'il n'y a ni l'un ni l'autre, on met 0
+        df_merged['final_count'] = df_merged['final_count'].fillna(0)
 
-        # 5. Ajout des coordonnées
+        # 5. AJOUT COORDONNÉES
         df_final = pd.merge(df_merged, df_locs, on="counter_id", how="left")
 
-        # 6. Formatage pour le frontend
+        # 6. FORMATAGE
         df_final = df_final.rename(columns={
-            'final_count': 'predicted_intensity', # Nom attendu par le front
+            'final_count': 'predicted_intensity',
             'datetime': 'date'
         })
         
-        df_final['temperature_2m'] = 15.0 # Valeur par défaut
+        df_final['temperature_2m'] = 15.0
         df_final['date'] = df_final['date'].astype(str)
         
-        # Tri final
+        # On trie pour avoir une belle ligne continue
         df_final = df_final.sort_values(by=['counter_id', 'date'])
 
-        # On ne garde que les colonnes utiles pour alléger le JSON
+        # Nettoyage des colonnes inutiles pour le JSON
         cols_to_keep = ['counter_id', 'date', 'predicted_intensity', 'lat', 'lon', 'temperature_2m']
-        # On filtre les colonnes qui existent vraiment (sécurité)
         cols_final = [c for c in cols_to_keep if c in df_final.columns]
 
         return df_final[cols_final].to_dict(orient="records")
