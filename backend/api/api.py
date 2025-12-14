@@ -5,6 +5,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from backend.data.schemas import Database
 from functools import lru_cache
+from .metrics import router as metrics_router
 
 # 1. Configuration
 load_dotenv()
@@ -18,6 +19,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(metrics_router) # <--- Intégration des routes metrics dans l'app
 
 # --- GESTION DE LA BDD (Lazy Loading) ---
 @lru_cache()
@@ -352,7 +355,7 @@ def get_map_data():
         query_pred = """
                     SELECT counter_id, datetime, predicted_values as pred_count
                     FROM model_data
-                    WHERE datetime >= CURRENT_DATE - INTERVAL '7 day' 
+                    WHERE datetime >= CURRENT_DATE - INTERVAL '21 day' 
                     AND datetime < CURRENT_DATE + INTERVAL '2 day'
                 """
 
