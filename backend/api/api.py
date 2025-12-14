@@ -339,25 +339,22 @@ def get_map_data():
         # et 2 jours en avant pour le futur.
         
         # --- REQUÊTE A : DONNÉES RÉELLES ---
-try:
         # On élargit la fenêtre à 30 jours en arrière pour attraper le 2 décembre
         query_real = """
             SELECT counter_id, datetime, intensity as real_count
             FROM velo_clean
             WHERE datetime >= CURRENT_DATE - INTERVAL '30 day'
         """
-        
         # --- REQUÊTE B : PRÉDICTIONS (CORRECTION ICI) ---
         # AVANT : datetime >= CURRENT_DATE (Trop strict, créait des trous)
-        # APRÈS : datetime >= CURRENT_DATE - INTERVAL '3 day'
+        # APRÈS : datetime >= CURRENT_DATE - INTERVAL '30 day'
         # On récupère les prédictions sur la MÊME période que le réel.
-try:
         query_pred = """
-            SELECT counter_id, datetime, predicted_values as pred_count
-            FROM model_data
-            WHERE datetime >= CURRENT_DATE - INTERVAL '30 day' 
-            AND datetime < CURRENT_DATE + INTERVAL '2 day'
-        """
+                    SELECT counter_id, datetime, predicted_values as pred_count
+                    FROM model_data
+                    WHERE datetime >= CURRENT_DATE - INTERVAL '30 day' 
+                    AND datetime < CURRENT_DATE + INTERVAL '2 day'
+                """
 
         query_loc = "SELECT DISTINCT ON (counter_id) counter_id, lat, lon FROM velo_clean"
 
